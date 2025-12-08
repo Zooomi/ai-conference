@@ -1,0 +1,8 @@
+<svg width="180" height="50" viewBox="0 0 180 50" xmlns="http://www.w3.org/2000/svg">
+  <rect width="180" height="50" rx="10" fill="#0A3D91"></rect>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="20" fill="white">
+    AI Report
+  </text>
+  <circle cx="25" cy="25" r="10" fill="#ffffff"></circle>
+  <circle cx="25" cy="25" r="6" fill="#0A3D91"></circle>
+</svg>
