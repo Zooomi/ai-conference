@@ -2,7 +2,7 @@
 // ЛОКАЛЬНЫЙ BACKEND (БЕЗ ТУННЕЛЕЙ)
 //------------------------------------------------------
 
-const API_URL = "https://d5daa3l57dbs31c57gfp.fary004x.apigw.yandexcloud.net/generate";
+const API_URL = "https://d5daa3l57dbs31c57gfp.fary004x.apigw.yandexcloud.net";
 console.log("Используем backend:", API_URL);
 
 
@@ -180,3 +180,4 @@ function downloadReport(id) {
 
     URL.revokeObjectURL(url);
 }
+
