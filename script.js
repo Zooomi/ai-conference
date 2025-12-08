@@ -1,9 +1,9 @@
 //------------------------------------------------------
-// ЛОКАЛЬНЫЙ BACKEND (БЕЗ ТУННЕЛЕЙ)
+// ПРОДАКШН BACKEND (YANDEX API GATEWAY)
 //------------------------------------------------------
 
 const API_URL = "https://d5daa3l57dbs31c57gfp.fary004x.apigw.yandexcloud.net/generate";
-console.log("Используем backend:", API_URL);
+console.log("API backend:", API_URL);
 
 
 
@@ -181,5 +181,6 @@ function downloadReport(id) {
 
     URL.revokeObjectURL(url);
 }
+
 
 
