@@ -1,7 +1,8 @@
 // ============================
 // КОНФИГУРАЦИЯ API - ИСПРАВЛЕННЫЙ URL!
 // ============================
-const API_URL = "https://dsfdc8o72aqnsir05o3h.akta928u.apigw.yandexcloud.net";
+const API_URL = "https://d5daa3l57dbs31c57gfp.fary004x.apigw.yandexcloud.net/generate";
+
 
 
 console.log('✅ AI Conference загружен');
@@ -157,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 1000);
 });
+
 
 
 
