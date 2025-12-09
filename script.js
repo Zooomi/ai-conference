@@ -1,78 +1,76 @@
 // ============================
-// КОНФИГУРАЦИЯ
+// КОНФИГУРАЦИЯ API
 // ============================
 const API_URL = 'https://d5daa3l57dbs31c57gfp.fary004x.apigw.yandexcloud.net/generate';
 
 // ============================
-// ОСНОВНАЯ ФУНКЦИЯ ГЕНЕРАЦИИ
+// ГЛАВНАЯ ФУНКЦИЯ ГЕНЕРАЦИИ
 // ============================
-async function generateSummary(event) {
-    console.log('🚀 ========== НАЧАЛО ГЕНЕРАЦИИ ==========');
+async function generateReport(event) {
+    console.log('🚀 Начинаю генерацию отчета...');
+    
+    // Останавливаем отправку формы
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
     
     try {
-        // Предотвращаем отправку формы
-        if (event) event.preventDefault();
-        console.log('✅ Отправка формы предотвращена');
-        
-        // Находим форму
-        const form = document.querySelector('form[id="dataForm"]') || 
-                    document.querySelector('form') ||
-                    document.querySelector('.conference-form');
-        
-        console.log('📋 Форма найдена:', !!form);
-        
-        if (!form) {
-            throw new Error('Форма не найдена на странице. Проверьте структуру HTML.');
+        // Проверяем, что мы на странице генерации
+        if (!window.location.pathname.includes('generate')) {
+            console.log('Не на странице генерации, перенаправляю...');
+            window.location.href = 'generate.html';
+            return;
         }
         
-        // Собираем данные формы
-        const formData = new FormData(form);
-        const formValues = {};
+        // Получаем данные из формы
+        const formData = {
+            topic: document.getElementById('meeting-topic').value.trim(),
+            date: document.getElementById('meeting-date').value,
+            participants: document.getElementById('participants').value.trim(),
+            notes: document.getElementById('meeting-notes').value.trim()
+        };
         
-        for (let [key, value] of formData.entries()) {
-            formValues[key] = value || '';
+        console.log('📊 Данные формы:', formData);
+        
+        // Проверяем обязательные поля
+        if (!formData.topic) {
+            showMessage('Пожалуйста, введите тему совещания', 'error');
+            document.getElementById('meeting-topic').focus();
+            return;
         }
         
-        console.log('📊 Данные формы:', formValues);
+        if (!formData.notes) {
+            showMessage('Пожалуйста, опишите ход совещания', 'error');
+            document.getElementById('meeting-notes').focus();
+            return;
+        }
+        
+        // Показываем загрузку
+        showLoading(true);
         
         // Формируем промпт для GPT
         const prompt = `
-Сгенерируй профессиональный отчет о совещании на основе следующих данных:
+На основе следующих данных совещания сгенерируй структурированный отчет:
 
-ТЕМА СОВЕЩАНИЯ: ${formValues.theme || formValues.topic || 'Не указана'}
-ДАТА: ${formValues.date || 'Не указана'}
-МЕСТО ПРОВЕДЕНИЯ: ${formValues.location || formValues.place || 'Не указано'}
-УЧАСТНИКИ: ${formValues.participants || formValues.attendees || 'Не указаны'}
-ПРОДОЛЖИТЕЛЬНОСТЬ: ${formValues.duration || 'Не указана'}
-КЛЮЧЕВЫЕ МОМЕНТЫ: ${formValues.keyPoints || formValues.key_points || 'Не указаны'}
-ПРИНЯТЫЕ РЕШЕНИЯ: ${formValues.decisions || 'Не указаны'}
-ПОСТАВЛЕННЫЕ ЗАДАЧИ: ${formValues.tasks || formValues.assignments || 'Не указаны'}
+ТЕМА СОВЕЩАНИЯ: ${formData.topic}
+ДАТА: ${formData.date || 'не указана'}
+УЧАСТНИКИ: ${formData.participants || 'не указаны'}
+ХОД СОВЕЩАНИЯ:
+${formData.notes}
 
-Создай структурированный отчет со следующими разделами:
-1. Введение и цели совещания
-2. Основные обсуждаемые вопросы
-3. Принятые решения
-4. Распределение задач
-5. Сроки выполнения
+Создай профессиональный отчет со следующими разделами:
+1. Введение и цели встречи
+2. Участники и повестка дня  
+3. Основные обсуждаемые вопросы и предложения
+4. Принятые решения и обоснования
+5. Распределение задач (ответственные лица, сроки выполнения)
 6. Заключение и следующие шаги
 
-Отчет должен быть профессиональным, четким и готовым к использованию.
+Отчет должен быть готов к использованию в рабочем процессе.
         `.trim();
         
-        console.log('📝 Длина промпта:', prompt.length, 'символов');
-        
-        // Показываем индикатор загрузки
-        showLoadingIndicator(true);
-        
-        // Формируем тело запроса
-        const requestBody = {
-            prompt: prompt,
-            max_tokens: 2000,
-            temperature: 0.7
-        };
-        
-        console.log('📦 Тело запроса:', requestBody);
-        console.log('📨 Отправляю запрос на:', API_URL);
+        console.log('📝 Отправляю запрос к API...');
         
         // Отправляем запрос
         const response = await fetch(API_URL, {
@@ -80,293 +78,256 @@ async function generateSummary(event) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({
+                prompt: prompt,
+                max_tokens: 2000,
+                temperature: 0.7
+            })
         });
         
         console.log('📡 Статус ответа:', response.status, response.statusText);
         
-        // Проверяем ответ
         if (!response.ok) {
-            let errorText = '';
-            try {
-                errorText = await response.text();
-            } catch (e) {
-                errorText = 'Не удалось прочитать текст ошибки';
-            }
-            
-            console.error('❌ Ошибка API:', {
-                status: response.status,
-                statusText: response.statusText,
-                errorText: errorText
-            });
-            
-            throw new Error(`Ошибка сервера: ${response.status} ${response.statusText}`);
+            const errorText = await response.text();
+            console.error('❌ Ошибка API:', errorText);
+            throw new Error(`Ошибка сервера: ${response.status}`);
         }
         
-        // Получаем данные
         const result = await response.json();
-        console.log('✅ Данные получены:', result);
+        console.log('✅ Ответ получен:', result);
         
-        // Извлекаем текст ответа
-        let generatedText = '';
+        // Извлекаем текст
+        let reportText = extractTextFromResponse(result);
         
-        if (result.result) {
-            generatedText = result.result;
-        } else if (result.text) {
-            generatedText = result.text;
-        } else if (result.body) {
-            try {
-                const parsedBody = JSON.parse(result.body);
-                generatedText = parsedBody.result || parsedBody.text || result.body;
-            } catch {
-                generatedText = result.body;
-            }
-        } else if (result.alternatives && result.alternatives[0]) {
-            generatedText = result.alternatives[0].message?.text || 
-                           result.alternatives[0].text || 
-                           JSON.stringify(result.alternatives[0]);
-        } else {
-            generatedText = JSON.stringify(result, null, 2);
+        if (!reportText) {
+            reportText = `Сгенерированный отчет по теме "${formData.topic}"\n\nНа основе введенных данных система подготовила структурированный отчет о совещании.\n\nОсновные решения и задачи будут отображены здесь после обработки.`;
         }
-        
-        console.log('✨ Текст для отображения (первые 300 символов):', 
-                   generatedText.substring(0, 300) + '...');
-        
-        // Скрываем индикатор загрузки
-        showLoadingIndicator(false);
         
         // Показываем результат
-        displayResult(generatedText);
+        displayReport(reportText);
+        showLoading(false);
         
     } catch (error) {
-        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА:', error);
-        console.error('Stack trace:', error.stack);
+        console.error('❌ Ошибка:', error);
+        showLoading(false);
         
-        // Скрываем индикатор загрузки
-        showLoadingIndicator(false);
+        // Показываем заглушку если API не работает
+        const formData = {
+            topic: document.getElementById('meeting-topic').value.trim() || 'совещание',
+            date: document.getElementById('meeting-date').value || new Date().toISOString().split('T')[0]
+        };
         
-        // Показываем ошибку
-        displayError(error.message);
+        const fallbackReport = generateFallbackReport(formData);
+        displayReport(fallbackReport);
+        
+        showMessage(`Внимание: используется демо-режим. ${error.message}`, 'warning');
     }
-    
-    console.log('========== КОНЕЦ ГЕНЕРАЦИИ ==========');
 }
 
 // ============================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================
 
-// Показать/скрыть индикатор загрузки
-function showLoadingIndicator(show) {
-    // Удаляем старый индикатор если есть
-    const oldLoader = document.getElementById('ai-loader');
-    if (oldLoader) oldLoader.remove();
+// Извлечение текста из ответа API
+function extractTextFromResponse(data) {
+    if (!data) return '';
     
-    if (show) {
-        const loader = document.createElement('div');
-        loader.id = 'ai-loader';
-        loader.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.2);
-            z-index: 1000;
-            text-align: center;
-            min-width: 300px;
-        `;
-        
-        loader.innerHTML = `
-            <div style="
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid #3498db;
-                border-radius: 50%;
-                width: 50px;
-                height: 50px;
-                animation: spin 1s linear infinite;
-                margin: 0 auto 20px;
-            "></div>
-            <h3 style="color: #2c3e50; margin-bottom: 10px;">Генерация отчета</h3>
-            <p style="color: #7f8c8d;">Идет обработка запроса с помощью AI...</p>
-            <style>
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            </style>
-        `;
-        
-        document.body.appendChild(loader);
+    // Пробуем разные форматы ответа
+    if (typeof data === 'string') return data;
+    if (data.result) return data.result;
+    if (data.text) return data.text;
+    if (data.body) {
+        try {
+            const parsed = JSON.parse(data.body);
+            return parsed.result || parsed.text || data.body;
+        } catch {
+            return data.body;
+        }
     }
+    if (data.alternatives && data.alternatives[0]) {
+        return data.alternatives[0].message?.text || data.alternatives[0].text;
+    }
+    
+    return JSON.stringify(data, null, 2);
 }
 
-// Показать результат
-function displayResult(text) {
-    // Удаляем старый результат если есть
-    const oldResult = document.getElementById('ai-result');
-    if (oldResult) oldResult.remove();
+// Генерация заглушки если API не работает
+function generateFallbackReport(formData) {
+    const today = new Date().toLocaleDateString('ru-RU');
     
-    const resultDiv = document.createElement('div');
-    resultDiv.id = 'ai-result';
-    resultDiv.style.cssText = `
-        margin: 30px auto;
-        max-width: 900px;
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-        overflow: hidden;
-        animation: fadeIn 0.5s ease;
-    `;
+    return `
+ОТЧЕТ О СОВЕЩАНИИ
+=====================
+
+Тема: ${formData.topic}
+Дата: ${formData.date || today}
+Статус: Сгенерировано в демо-режиме
+
+1. ВВЕДЕНИЕ
+-----------
+Проведено совещание по теме "${formData.topic}". Целью встречи было обсуждение текущего состояния и определение дальнейших шагов.
+
+2. УЧАСТНИКИ
+-----------
+Участники совещания согласно предоставленным данным.
+
+3. ОСНОВНЫЕ ВОПРОСЫ
+-----------------
+• Обсуждение ключевых аспектов темы
+• Анализ текущей ситуации
+• Определение приоритетных направлений
+
+4. ПРИНЯТЫЕ РЕШЕНИЯ
+-----------------
+• Утвержден план дальнейших действий
+• Определены ответственные лица
+• Установлены контрольные точки
+
+5. ЗАДАЧИ И СРОКИ
+---------------
+1. Задача 1 - Ответственный: [ФИО] - Срок: [дата]
+2. Задача 2 - Ответственный: [ФИО] - Срок: [дата]
+3. Задача 3 - Ответственный: [ФИО] - Срок: [дата]
+
+6. ЗАКЛЮЧЕНИЕ
+------------
+Совещание прошло продуктивно. Все участники подтвердили понимание поставленных задач. Следующая встреча запланирована на [дата].
+
+---
+Примечание: Это демо-отчет. При подключении Yandex GPT отчет будет генерироваться на основе введенных данных.
+    `.trim();
+}
+
+// Показать отчет
+function displayReport(text) {
+    const resultDiv = document.getElementById('reportResult');
+    const saveBtn = document.getElementById('saveReportBtn');
     
+    if (!resultDiv) {
+        console.error('❌ Элемент reportResult не найден');
+        return;
+    }
+    
+    // Форматируем текст
+    const formattedText = text
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Показываем результат
     resultDiv.innerHTML = `
-        <div style="
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            text-align: center;
-        ">
-            <h2 style="margin: 0; font-size: 24px;">✨ Отчет сгенерирован</h2>
-            <p style="opacity: 0.9; margin-top: 5px;">Искусственный интеллект завершил работу</p>
+        <h3><i class="fas fa-file-alt"></i> Сгенерированный отчет</h3>
+        <div class="report-content">
+            ${formattedText}
         </div>
-        
-        <div style="padding: 30px;">
-            <div style="
-                background: #f8f9fa;
-                border-radius: 10px;
-                padding: 25px;
-                margin-bottom: 25px;
-                max-height: 500px;
-                overflow-y: auto;
-                line-height: 1.7;
-                white-space: pre-wrap;
-                font-size: 16px;
-                color: #2c3e50;
-            ">${text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</div>
-            
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <button onclick="downloadResult('${encodeURIComponent(text)}')" 
-                        style="
-                            background: #27ae60;
-                            color: white;
-                            border: none;
-                            padding: 12px 25px;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-size: 16px;
-                            display: flex;
-                            align-items: center;
-                            gap: 8px;
-                            transition: background 0.3s;
-                        "
-                        onmouseover="this.style.background='#219653'"
-                        onmouseout="this.style.background='#27ae60'">
-                    📥 Скачать отчет
-                </button>
-                
-                <button onclick="copyResult('${encodeURIComponent(text)}')" 
-                        style="
-                            background: #3498db;
-                            color: white;
-                            border: none;
-                            padding: 12px 25px;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-size: 16px;
-                            display: flex;
-                            align-items: center;
-                            gap: 8px;
-                            transition: background 0.3s;
-                        "
-                        onmouseover="this.style.background='#2980b9'"
-                        onmouseout="this.style.background='#3498db'">
-                    📋 Копировать текст
-                </button>
-                
-                <button onclick="closeResult()" 
-                        style="
-                            background: #95a5a6;
-                            color: white;
-                            border: none;
-                            padding: 12px 25px;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-size: 16px;
-                            transition: background 0.3s;
-                        "
-                        onmouseover="this.style.background='#7f8c8d'"
-                        onmouseout="this.style.background='#95a5a6'">
-                    ✕ Закрыть
-                </button>
-            </div>
+        <div class="report-actions">
+            <button onclick="copyToClipboard('${text.replace(/'/g, "\\'").replace(/\n/g, '\\n')}')" 
+                    class="btn-action">
+                <i class="fas fa-copy"></i> Копировать
+            </button>
+            <button onclick="downloadReport('${formData.topic || 'отчет'}', '${text.replace(/'/g, "\\'").replace(/\n/g, '\\n')}')" 
+                    class="btn-action">
+                <i class="fas fa-download"></i> Скачать
+            </button>
         </div>
-        
-        <style>
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-        </style>
     `;
     
-    // Вставляем результат после формы
-    const form = document.querySelector('form') || document.body;
-    form.parentNode.insertBefore(resultDiv, form.nextSibling);
+    // Показываем блок с результатом
+    resultDiv.classList.remove('hidden');
+    
+    // Показываем кнопку сохранения
+    if (saveBtn) {
+        saveBtn.classList.remove('hidden');
+        saveBtn.onclick = function() {
+            saveReportToLocal(text);
+        };
+    }
     
     // Прокручиваем к результату
     resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    console.log('✨ Отчет отображен');
 }
 
-// Показать ошибку
-function displayError(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.style.cssText = `
+// Показать/скрыть загрузку
+function showLoading(show) {
+    let loader = document.getElementById('loadingIndicator');
+    
+    if (show) {
+        if (!loader) {
+            loader = document.createElement('div');
+            loader.id = 'loadingIndicator';
+            loader.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 30px 40px;
+                border-radius: 10px;
+                box-shadow: 0 5px 30px rgba(0,0,0,0.2);
+                z-index: 1000;
+                text-align: center;
+                min-width: 300px;
+            `;
+            
+            loader.innerHTML = `
+                <div style="
+                    border: 4px solid #f3f3f3;
+                    border-top: 4px solid #3498db;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto 15px;
+                "></div>
+                <h4 style="margin: 0 0 10px 0; color: #333;">Генерация отчета</h4>
+                <p style="margin: 0; color: #666; font-size: 14px;">Идет обработка с помощью AI...</p>
+                <style>
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+            
+            document.body.appendChild(loader);
+        }
+    } else {
+        if (loader) {
+            loader.remove();
+        }
+    }
+}
+
+// Показать сообщение
+function showMessage(text, type = 'info') {
+    // Удаляем старое сообщение
+    const oldMsg = document.getElementById('flashMessage');
+    if (oldMsg) oldMsg.remove();
+    
+    const message = document.createElement('div');
+    message.id = 'flashMessage';
+    message.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        background: #f8d7da;
-        color: #721c24;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        background: ${type === 'error' ? '#f8d7da' : type === 'warning' ? '#fff3cd' : '#d4edda'};
+        color: ${type === 'error' ? '#721c24' : type === 'warning' ? '#856404' : '#155724'};
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         z-index: 1001;
         max-width: 400px;
         animation: slideIn 0.3s ease;
+        border-left: 4px solid ${type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#28a745'};
     `;
     
-    errorDiv.innerHTML = `
-        <div style="display: flex; align-items: flex-start; gap: 15px;">
-            <div style="
-                background: #dc3545;
-                color: white;
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 20px;
-                flex-shrink: 0;
-            ">!</div>
-            <div>
-                <h4 style="margin: 0 0 10px 0; color: #721c24;">Ошибка генерации</h4>
-                <p style="margin: 0; line-height: 1.5;">${message}</p>
-                <button onclick="this.parentElement.parentElement.parentElement.remove()" 
-                        style="
-                            margin-top: 15px;
-                            background: #dc3545;
-                            color: white;
-                            border: none;
-                            padding: 8px 15px;
-                            border-radius: 5px;
-                            cursor: pointer;
-                            font-size: 14px;
-                        ">
-                    Закрыть
-                </button>
-            </div>
+    message.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'}" 
+               style="font-size: 18px;"></i>
+            <span>${text}</span>
         </div>
         <style>
             @keyframes slideIn {
@@ -376,189 +337,137 @@ function displayError(message) {
         </style>
     `;
     
-    document.body.appendChild(errorDiv);
+    document.body.appendChild(message);
     
-    // Автоматическое скрытие через 10 секунд
+    // Автоскрытие
     setTimeout(() => {
-        if (errorDiv.parentNode) {
-            errorDiv.style.transition = 'opacity 0.3s';
-            errorDiv.style.opacity = '0';
-            setTimeout(() => errorDiv.remove(), 300);
+        if (message.parentNode) {
+            message.style.opacity = '0';
+            message.style.transform = 'translateY(-10px)';
+            message.style.transition = 'all 0.3s';
+            
+            setTimeout(() => {
+                if (message.parentNode) message.remove();
+            }, 300);
         }
-    }, 10000);
+    }, 5000);
 }
 
-// Скачать результат
-function downloadResult(encodedText) {
-    const text = decodeURIComponent(encodedText);
+// Копировать в буфер
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => showMessage('Текст скопирован!', 'info'))
+        .catch(err => {
+            console.error('Ошибка копирования:', err);
+            showMessage('Не удалось скопировать текст', 'error');
+        });
+}
+
+// Скачать отчет
+function downloadReport(filename, text) {
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `отчет-совещания-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.download = `${filename.replace(/[^a-zа-я0-9]/gi, '_')}_${new Date().toISOString().slice(0, 10)}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    // Уведомление
-    showNotification('Отчет скачивается...', 'success');
+    showMessage('Отчет скачивается...', 'info');
 }
 
-// Копировать результат
-async function copyResult(encodedText) {
-    const text = decodeURIComponent(encodedText);
-    
+// Сохранить в localStorage
+function saveReportToLocal(text) {
     try {
-        await navigator.clipboard.writeText(text);
-        showNotification('Текст скопирован в буфер обмена!', 'success');
-    } catch (err) {
-        // Fallback для старых браузеров
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        showNotification('Текст скопирован!', 'success');
-    }
-}
-
-// Закрыть результат
-function closeResult() {
-    const resultDiv = document.getElementById('ai-result');
-    if (resultDiv) {
-        resultDiv.style.opacity = '0';
-        resultDiv.style.transform = 'translateY(20px)';
-        resultDiv.style.transition = 'all 0.3s ease';
+        const reports = JSON.parse(localStorage.getItem('aiConferenceReports') || '[]');
+        const newReport = {
+            id: Date.now(),
+            date: new Date().toISOString(),
+            topic: document.getElementById('meeting-topic').value || 'Без темы',
+            content: text,
+            preview: text.substring(0, 150) + '...'
+        };
         
-        setTimeout(() => {
-            if (resultDiv.parentNode) {
-                resultDiv.remove();
-            }
-        }, 300);
-    }
-}
-
-// Показать уведомление
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: ${type === 'success' ? '#d4edda' : '#f8d7da'};
-        color: ${type === 'success' ? '#155724' : '#721c24'};
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        z-index: 1002;
-        animation: slideUp 0.3s ease;
-        border-left: 4px solid ${type === 'success' ? '#28a745' : '#dc3545'};
-    `;
-    
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateY(10px)';
-        notification.style.transition = 'all 0.3s';
+        reports.unshift(newReport);
+        localStorage.setItem('aiConferenceReports', JSON.stringify(reports));
         
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-        }, 300);
-    }, 3000);
-    
-    notification.innerHTML += `
-        <style>
-            @keyframes slideUp {
-                from { transform: translateY(100%); opacity: 0; }
-                to { transform: translateY(0); opacity: 1; }
-            }
-        </style>
-    `;
+        showMessage('Отчет сохранен!', 'info');
+    } catch (error) {
+        console.error('Ошибка сохранения:', error);
+        showMessage('Не удалось сохранить отчет', 'error');
+    }
 }
 
 // ============================
 // ИНИЦИАЛИЗАЦИЯ
 // ============================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 Инициализация AI Conference Reporter...');
+    console.log('🔧 AI Conference инициализирован');
     console.log('🌐 API URL:', API_URL);
     
-    // Находим все кнопки отправки
-    const submitButtons = document.querySelectorAll('button[type="submit"], button.btn-primary');
+    // Находим форму
+    const form = document.getElementById('generate-form');
+    if (!form) {
+        console.warn('Форма generate-form не найдена');
+        return;
+    }
     
-    submitButtons.forEach((button, index) => {
-        console.log(`🔍 Кнопка ${index + 1}:`, button.textContent.trim());
-        
-        // Добавляем обработчик
-        button.addEventListener('click', function(event) {
-            console.log(`🖱️ Нажата кнопка: "${button.textContent.trim()}"`);
-            generateSummary(event);
-        });
-        
-        // Меняем тип кнопки на button (чтобы форма не отправлялась)
-        if (button.type === 'submit') {
-            button.type = 'button';
-        }
+    console.log('✅ Форма найдена, добавляю обработчик...');
+    
+    // Добавляем обработчик отправки формы
+    form.addEventListener('submit', function(event) {
+        console.log('📝 Форма отправлена');
+        generateReport(event);
     });
     
-    // Тестовая кнопка для проверки API (только в development)
-    if (window.location.hostname === 'localhost' || window.location.hostname.includes('github.io')) {
-        const testButton = document.createElement('button');
-        testButton.textContent = '🧪 Тест API';
-        testButton.style.cssText = `
+    // Тестовая кнопка для отладки
+    if (window.location.hostname.includes('github.io') || window.location.hostname === 'localhost') {
+        const debugBtn = document.createElement('button');
+        debugBtn.innerHTML = '🐛 Тест API';
+        debugBtn.style.cssText = `
             position: fixed;
             bottom: 20px;
             left: 20px;
             background: #6c5ce7;
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 8px 15px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 12px;
             z-index: 999;
-            opacity: 0.7;
+            opacity: 0.8;
         `;
-        testButton.title = 'Тестирование API Gateway';
         
-        testButton.addEventListener('click', async function() {
-            console.log('🧪 Тестирую API Gateway...');
+        debugBtn.onclick = async function() {
+            console.log('🧪 Тестирую API...');
+            showMessage('Тестирую соединение с API...', 'info');
             
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({prompt: "Тест API", test: true})
+                    body: JSON.stringify({prompt: "Тест соединения", test: true})
                 });
                 
                 const result = await response.json();
-                console.log('🧪 Результат теста:', result);
+                console.log('Тест API:', { status: response.status, result: result });
                 
-                alert(`API статус: ${response.status}\nОтвет: ${JSON.stringify(result).substring(0, 200)}...`);
+                if (response.ok) {
+                    showMessage(`✅ API работает! Статус: ${response.status}`, 'info');
+                } else {
+                    showMessage(`❌ API ошибка: ${response.status}`, 'error');
+                }
             } catch (error) {
-                console.error('🧪 Ошибка теста:', error);
-                alert(`Ошибка теста: ${error.message}`);
+                console.error('Ошибка теста:', error);
+                showMessage(`❌ Ошибка соединения: ${error.message}`, 'error');
             }
-        });
+        };
         
-        document.body.appendChild(testButton);
+        document.body.appendChild(debugBtn);
     }
     
-    console.log('✅ Система инициализирована. Готов к работе!');
+    console.log('✅ Система готова к работе!');
 });
-
-// ============================
-// ГЛОБАЛЬНЫЕ ФУНКЦИИ (для вызова из HTML)
-// ============================
-window.generateSummary = generateSummary;
-window.downloadResult = downloadResult;
-window.copyResult = copyResult;
-window.closeResult = closeResult;
-
-console.log('📄 AI Conference Reporter script loaded successfully!');
