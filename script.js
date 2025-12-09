@@ -1,4 +1,6 @@
+// ИСПРАВЬТЕ ЭТУ СТРОКУ
 const API_URL = 'https://d5daa3l57dbs31c57gfp.fary004x.apigw.yandexcloud.net/generate';
+//                                                   ^^^^^ правильно
 
 async function generateSummary() {
     console.log('🚀 Запуск генерации отчета...');
@@ -162,3 +164,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🌐 API URL:', API_URL);
 });
+
