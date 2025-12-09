@@ -1,3 +1,4 @@
+// ИСПРАВЛЕННЫЙ URL!
 const API_URL = 'https://d5daa3l57dbs31c57gfp.fary004x.apigw.yandexcloud.net/generate';
 
 async function generateSummary() {
@@ -186,3 +187,4 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Кнопка generateBtn не найдена!');
     }
 });
+
