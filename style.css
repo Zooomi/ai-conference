@@ -316,24 +316,6 @@ a {
     box-shadow: 0 0 0 2px rgba(10, 61, 145, 0.15);
 }
 
-.report-card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 18px 18px 20px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-    max-height: 500px;
-    overflow: auto;
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 0.25s, transform 0.25s;
-}
-
-.report-card.hidden {
-    opacity: 0;
-    transform: translateY(6px);
-    pointer-events: none;
-}
-
 /* Examples */
 
 .examples {
@@ -382,108 +364,27 @@ a {
     font-size: 13px;
 }
 
-/* Responsive */
-
-@media (max-width: 768px) {
-    .hero-inner {
-        flex-direction: column;
-    }
-
-    .generator {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .header {
-        position: static;
-    }
-}
-.hidden {
-    display: none;
-}
-/* Стили для загрузки */
-.loading {
-    text-align: center;
-    padding: 40px;
-}
-
-.spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Стили для результата */
-.summary-content {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.summary-text {
-    margin: 20px 0;
-    line-height: 1.6;
-    white-space: pre-line;
-}
-
-/* Кнопки */
-.btn-download {
-    background: #27ae60;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 20px;
-}
-
-.btn-download:hover {
-    background: #219653;
-}
-
-.btn-test {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.error {
-    background: #fee;
-    border: 1px solid #f99;
-    padding: 20px;
-    border-radius: 5px;
-    color: #c00;
-}
-
-.hidden {
-    display: none;
-}
 /* Стили для отчета */
 .report-card {
     background: white;
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 25px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     margin-top: 30px;
     border: 1px solid #e0e0e0;
+    animation: fadeIn 0.5s ease;
 }
 
 .report-card.hidden {
-    display: none;
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+}
+
+.report-card:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .report-card h3 {
@@ -496,6 +397,10 @@ a {
     gap: 10px;
 }
 
+.report-card h3 i {
+    color: #0A3D91;
+}
+
 .report-content {
     line-height: 1.7;
     white-space: pre-line;
@@ -505,6 +410,25 @@ a {
     margin-bottom: 20px;
     max-height: 500px;
     overflow-y: auto;
+    font-size: 15px;
+}
+
+.report-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.report-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.report-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.report-content::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
 }
 
 .report-actions {
@@ -524,11 +448,13 @@ a {
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: background 0.3s;
+    transition: all 0.3s ease;
 }
 
 .btn-action:hover {
     background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .btn-action:first-child {
@@ -539,13 +465,57 @@ a {
     background: #219653;
 }
 
-/* Стили для скрытых элементов */
+/* Стили для загрузки */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Стили для ошибок и сообщений */
+.error {
+    background: #fee;
+    border: 1px solid #f99;
+    padding: 20px;
+    border-radius: 5px;
+    color: #c00;
+    margin-top: 20px;
+}
+
+/* Утилиты */
 .hidden {
     display: none !important;
 }
 
-/* Адаптивность */
+/* Responsive */
+
 @media (max-width: 768px) {
+    .hero-inner {
+        flex-direction: column;
+    }
+
+    .generator {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .header {
+        position: static;
+    }
+    
     .report-card {
         padding: 15px;
     }
@@ -553,11 +523,17 @@ a {
     .report-content {
         padding: 15px;
         font-size: 14px;
+        max-height: 400px;
     }
     
     .btn-action {
         padding: 8px 15px;
         font-size: 14px;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .report-actions {
+        flex-direction: column;
     }
 }
-
