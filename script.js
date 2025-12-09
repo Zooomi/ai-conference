@@ -56,9 +56,10 @@ async function generateSummary() {
         
         console.log('Тело запроса:', requestBody);
         
-        // Отправляем запрос
+        // Отправляем запрос С CORS!
         const response = await fetch(API_URL, {
             method: 'POST',
+            mode: 'cors', // ← ВАЖНО: добавляем mode cors
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -126,30 +127,41 @@ async function generateSummary() {
     }
 }
 
-// Функция для тестирования API
+// Функция для тестирования API с CORS
 async function testAPI() {
-    console.log('Тестирую API...');
+    console.log('Тестирую API с CORS...');
     
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
+            mode: 'cors', // ← ВАЖНО
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({test: "hello", prompt: "Ответь коротко: тест API работает?"})
+            body: JSON.stringify({
+                prompt: "Ответь коротко: тест API работает?",
+                max_tokens: 50
+            })
         });
         
+        console.log('Статус теста:', response.status);
         const text = await response.text();
         console.log('Тестовый ответ:', text);
-        alert(`API статус: ${response.status}\nОтвет: ${text.substring(0, 100)}...`);
+        
+        try {
+            const data = JSON.parse(text);
+            alert(`✅ API работает!\nСтатус: ${response.status}\nОтвет: ${data.result || data.text || text.substring(0, 100)}...`);
+        } catch {
+            alert(`✅ API работает!\nСтатус: ${response.status}\nОтвет: ${text.substring(0, 100)}...`);
+        }
         
     } catch (error) {
         console.error('Ошибка теста:', error);
-        alert(`Ошибка теста: ${error.message}`);
+        alert(`❌ Ошибка теста: ${error.message}`);
     }
 }
 
-// Функция для скачивания отчета
+// Остальные функции остаются без изменений...
 function downloadSummary(text) {
     const blob = new Blob([text], { type: 'text/plain' });
     const url = window.URL.createObjectURL(blob);
@@ -162,11 +174,10 @@ function downloadSummary(text) {
     window.URL.revokeObjectURL(url);
 }
 
-// Инициализация при загрузке страницы
+// Инициализация
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Страница загружена, API URL:', API_URL);
     
-    // Навешиваем обработчик на кнопку
     const generateBtn = document.getElementById('generateBtn');
     if (generateBtn) {
         generateBtn.addEventListener('click', generateSummary);
