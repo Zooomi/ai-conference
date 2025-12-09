@@ -60,6 +60,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     })
                 });
 
+                // Если код ответа не 200 — показать реальную ошибку
+                if (!response.ok) {
+                    reportBlock.innerHTML = `<p><strong>Ошибка API:</strong> ${response.status} (${response.statusText})</p>`;
+                    return;
+                }
+
                 const data = await response.json();
 
                 if (data.error) {
@@ -79,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } catch (err) {
                 console.error(err);
-                reportBlock.innerHTML = "<p><strong>Ошибка связи с backend. Убедитесь, что server.mjs запущен.</strong></p>";
+                reportBlock.innerHTML = "<p><strong>Ошибка связи с сервером. Проверьте API Gateway.</strong></p>";
             }
         });
     }
@@ -182,7 +188,3 @@ function downloadReport(id) {
 
     URL.revokeObjectURL(url);
 }
-
-
-
-
