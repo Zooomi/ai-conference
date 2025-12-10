@@ -1,44 +1,42 @@
 // ============================
-// КОНФИГУРАЦИЯ API - ИСПРАВЛЕННЫЙ URL!
+// КОНФИГУРАЦИЯ API
 // ============================
-const API_URL = "https://d5daa3l57dbs31c57gfp.fary004x.apigw.yandexcloud.net/generate";
+const API_URL = "https://d5dkiglup406pfs73s7f.9bgyfspn.apigw.yandexcloud.net/generate";
 
-
-
-console.log('✅ AI Conference загружен');
-console.log('🌐 API URL установлен:', API_URL);
+console.log("AI Conference загружен");
+console.log("API URL установлен:", API_URL);
 
 // ============================
 // ГЛАВНАЯ ФУНКЦИЯ ГЕНЕРАЦИИ
 // ============================
 async function generateReport(event) {
-    console.log('🚀 Начинаю генерацию отчета...');
-    
+    console.log("Начинаю генерацию отчета...");
+
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
-    
+
     try {
         // Получаем данные из формы
-        const topic = document.getElementById('meeting-topic').value.trim() || 'Совещание';
-        const date = document.getElementById('meeting-date').value || new Date().toISOString().split('T')[0];
-        const participants = document.getElementById('participants').value.trim() || 'Команда проекта';
-        const notes = document.getElementById('meeting-notes').value.trim() || 'Обсуждение рабочих вопросов';
-        
-        console.log('📊 Данные формы:', { topic, date, participants, notes });
-        
+        const topic = document.getElementById("meeting-topic").value.trim() || "Совещание";
+        const date = document.getElementById("meeting-date").value || new Date().toISOString().split("T")[0];
+        const participants = document.getElementById("participants").value.trim() || "Команда проекта";
+        const notes = document.getElementById("meeting-notes").value.trim() || "Обсуждение рабочих вопросов";
+
+        console.log("Данные формы:", { topic, date, participants, notes });
+
         // Показываем загрузку
-        const resultDiv = document.getElementById('reportResult');
+        const resultDiv = document.getElementById("reportResult");
         resultDiv.innerHTML = `
             <div style="text-align: center; padding: 40px;">
                 <div style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
                 <p>Генерируем отчет с помощью AI...</p>
-                <style>@keyframes spin {0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }}</style>
+                <style>@keyframes spin {0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }</style>
             </div>
         `;
-        resultDiv.classList.remove('hidden');
-        
+        resultDiv.classList.remove("hidden");
+
         // Формируем промпт
         const prompt = `Создай отчет о совещании:
 Тема: ${topic}
@@ -52,58 +50,59 @@ async function generateReport(event) {
 3. Принятые решения
 4. Поставленные задачи
 5. Заключение`;
-        
-        console.log('📤 Отправляю запрос к API:', API_URL);
-        console.log('📝 Промпт:', prompt);
-        
+
+        console.log("Отправляю запрос к API:", API_URL);
+        console.log("Промпт:", prompt);
+
         // Отправляем запрос
         const response = await fetch(API_URL, {
-            method: 'POST',
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                "Content-Type": "application/json",
+                "Accept": "application/json"
             },
             body: JSON.stringify({
                 prompt: prompt
             })
         });
-        
-        console.log('📥 Статус ответа:', response.status, response.statusText);
-        
-        // Если ошибка HTTP
+
+        console.log("Статус ответа:", response.status, response.statusText);
+
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('❌ Ошибка от сервера:', errorText);
+            console.error("Ошибка от сервера:", errorText);
             throw new Error(`HTTP ${response.status}: ${response.statusText}\n${errorText}`);
         }
-        
-        // Получаем JSON
+
         const data = await response.json();
-        console.log('✅ Ответ получен:', data);
-        
-        // Извлекаем результат
-        const reportText = data.result || data.error || 'Не удалось сгенерировать отчет';
-        
-        // Показываем результат
+        console.log("Ответ получен:", data);
+
+        const reportText = data.result || data.error || "Не удалось сгенерировать отчет";
+
         resultDiv.innerHTML = `
             <div class="report-box">
-                <h3><i class="fas fa-file-alt"></i> Сгенерированный отчет</h3>
-                <div class="report-content">${reportText.replace(/\n/g, '<br>').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                <h3>Сгенерированный отчет</h3>
+                <div class="report-content">${reportText
+                    .replace(/\n/g, "<br>")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")}</div>
                 <div class="report-actions">
-                    <button onclick="copyToClipboard('${reportText.replace(/'/g, "\\'").replace(/\n/g, '\\n')}')" class="btn-action">
-                        <i class="fas fa-copy"></i> Копировать текст
+                    <button onclick="copyToClipboard('${reportText
+                        .replace(/'/g, "\\'")
+                        .replace(/\n/g, "\\n")}')" class="btn-action">
+                        Копировать текст
                     </button>
                 </div>
             </div>
         `;
-        
+
     } catch (error) {
-        console.error('❌ Ошибка:', error);
-        
-        const resultDiv = document.getElementById('reportResult');
+        console.error("Ошибка:", error);
+
+        const resultDiv = document.getElementById("reportResult");
         resultDiv.innerHTML = `
             <div style="background: #f8d7da; color: #721c24; padding: 20px; border-radius: 10px; border: 1px solid #f5c6cb;">
-                <h3><i class="fas fa-exclamation-triangle"></i> Ошибка при генерации</h3>
+                <h3>Ошибка при генерации</h3>
                 <p><strong>${error.message}</strong></p>
                 <p>API URL: ${API_URL}</p>
                 <p>Попробуйте:</p>
@@ -120,45 +119,41 @@ async function generateReport(event) {
     }
 }
 
-// Вспомогательные функции
+// Вспомогательная функция
 function copyToClipboard(text) {
-    navigator.clipboard.writeText(text)
-        .then(() => alert('✅ Текст скопирован в буфер обмена!'))
-        .catch(() => alert('❌ Не удалось скопировать текст'));
+    navigator.clipboard
+        .writeText(text)
+        .then(() => alert("Текст скопирован в буфер обмена!"))
+        .catch(() => alert("Не удалось скопировать текст"));
 }
 
 // Инициализация
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 Страница загружена');
-    console.log('🌐 Используемый API URL:', API_URL);
-    
-    const form = document.getElementById('generate-form');
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("Страница загружена");
+    console.log("Используемый API URL:", API_URL);
+
+    const form = document.getElementById("generate-form");
     if (form) {
-        form.addEventListener('submit', generateReport);
-        console.log('✅ Форма подключена');
+        form.addEventListener("submit", generateReport);
+        console.log("Форма подключена");
     }
-    
-    // Тестовый вызов API при загрузке
+
     setTimeout(() => {
-        console.log('🔄 Тестирую API подключение...');
+        console.log("Тестирую API подключение...");
         fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: 'Тест подключения' })
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: "Тест подключения" })
         })
-        .then(response => {
-            console.log('🛜 Тест API - статус:', response.status);
-            return response.text();
-        })
-        .then(text => {
-            console.log('🛜 Тест API - ответ:', text.substring(0, 200));
-        })
-        .catch(err => {
-            console.warn('⚠️ Тест API не прошел:', err.message);
-        });
+            .then(response => {
+                console.log("Тест API - статус:", response.status);
+                return response.text();
+            })
+            .then(text => {
+                console.log("Тест API - ответ:", text.substring(0, 200));
+            })
+            .catch(err => {
+                console.warn("Тест API не прошел:", err.message);
+            });
     }, 1000);
 });
-
-
-
-
