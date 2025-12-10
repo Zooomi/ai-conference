@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>Генерация отчёта – AI Conference</title>
     <link rel="stylesheet" href="style.css">
-
-    <!-- Убираем старый script.js! Он больше не нужен здесь -->
 </head>
 <body>
 
@@ -28,14 +26,13 @@
     <section class="page-header">
         <div class="container">
             <h1>Генерация отчёта о совещании</h1>
-            <p>Введите данные совещания — модель ИИ сгенерирует детальный структурированный отчёт.</p>
+            <p>Введите данные совещания — модель ИИ сгенерирует структурированный отчёт.</p>
         </div>
     </section>
 
     <section class="container">
         <div class="generator">
 
-            <!-- ФОРМА -->
             <form id="generate-form" class="form-card">
 
                 <div class="form-group">
@@ -64,17 +61,14 @@
 
             </form>
 
-            <!-- БЛОК СТАТУСА -->
-            <div id="llm-status" style="margin-top: 16px; font-size: 14px; color:#666;">
+            <div id="llm-status" style="margin-top: 10px; font-size: 14px; color: #555;">
                 Модель ещё не загружена.
             </div>
 
-            <!-- БЛОК ОТЧЁТА -->
             <div id="reportResult" class="report-card hidden"></div>
 
         </div>
 
-        <!-- Кнопка сохранения -->
         <button id="saveReportBtn" class="btn btn-primary full-width hidden" style="margin-top: 20px;">
             Сохранить отчёт
         </button>
@@ -88,7 +82,6 @@
     </div>
 </footer>
 
-<!-- Новый рабочий файл с нейросетью -->
 <script type="module" src="webllm-report.js"></script>
 
 </body>
