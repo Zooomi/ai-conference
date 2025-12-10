@@ -4,7 +4,8 @@
 
 const webllm = await import("https://esm.run/@mlc-ai/web-llm");
 
-const MODEL_NAME = "Llama-3.2-2B-Instruct-q4f32_1-MLC";
+const MODEL_NAME = "Llama-3.2-3B-Instruct-q4f32_1-MLC";
+
 
 
 let engine = null;
