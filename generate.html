@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>Генерация отчёта – AI Conference</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+
+    <!-- Убираем старый script.js! Он больше не нужен здесь -->
 </head>
 <body>
 
@@ -27,14 +28,14 @@
     <section class="page-header">
         <div class="container">
             <h1>Генерация отчёта о совещании</h1>
-            <p>Введите данные совещания, а система сгенерирует отчёт (имитация работы ИИ).</p>
+            <p>Введите данные совещания — модель ИИ сгенерирует детальный структурированный отчёт.</p>
         </div>
     </section>
 
     <section class="container">
         <div class="generator">
 
-            <!-- ФОРМА ГЕНЕРАЦИИ ОТЧЁТА -->
+            <!-- ФОРМА -->
             <form id="generate-form" class="form-card">
 
                 <div class="form-group">
@@ -57,18 +58,23 @@
                     <textarea id="meeting-notes" rows="6" placeholder="Кратко опишите, что обсуждалось..."></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary full-width">
+                <button id="generate-report-btn" type="button" class="btn btn-primary full-width">
                     Сгенерировать отчёт
                 </button>
 
             </form>
 
-            <!-- Блок, куда появится отчёт -->
+            <!-- БЛОК СТАТУСА -->
+            <div id="llm-status" style="margin-top: 16px; font-size: 14px; color:#666;">
+                Модель ещё не загружена.
+            </div>
+
+            <!-- БЛОК ОТЧЁТА -->
             <div id="reportResult" class="report-card hidden"></div>
 
         </div>
 
-        <!-- Кнопка сохранения отчёта -->
+        <!-- Кнопка сохранения -->
         <button id="saveReportBtn" class="btn btn-primary full-width hidden" style="margin-top: 20px;">
             Сохранить отчёт
         </button>
@@ -81,6 +87,9 @@
         <span>© 2025 AI Conference. Генерация отчётов.</span>
     </div>
 </footer>
+
+<!-- Новый рабочий файл с нейросетью -->
+<script type="module" src="webllm-report.js"></script>
 
 </body>
 </html>
