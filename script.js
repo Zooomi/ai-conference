@@ -1,4 +1,4 @@
-// script.js — только для страницы Сохранённые
+// script.js — логика страницы "Сохранённые"
 
 document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("savedReports");
@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    // Рендерим список отчётов
     container.innerHTML = reports
         .map(
             (r) => `
@@ -19,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="report-content">${r.text.replace(/\n/g, "<br>")}</div>
 
             <div class="report-actions">
-                <button class="btn-action download-pdf">Скачать PDF</button>
+                <button class="btn-action download-txt">Скачать TXT</button>
                 <button class="btn-action delete-report" style="background:#c0392b;">Удалить</button>
             </div>
         </div>
@@ -27,25 +28,31 @@ document.addEventListener("DOMContentLoaded", () => {
         )
         .join("");
 
-    // Кнопка PDF
-    document.querySelectorAll(".download-pdf").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
+    // --- Скачать TXT ---
+    document.querySelectorAll(".download-txt").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
-            const id = card.dataset.id;
-            const report = reports.find((r) => r.id == id);
+            const id = Number(card.dataset.id);
+            const report = reports.find((r) => r.id === id);
 
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ unit: "pt", format: "a4" });
+            if (!report) return;
 
-            const text = `Отчёт от ${report.date}\n\n${report.text}`;
-            const lines = doc.splitTextToSize(text, 550);
+            const fileName = `report_${report.id}.txt`;
+            const fileContent = `Отчёт от ${report.date}\n\n${report.text}`;
 
-            doc.text(lines, 30, 40);
-            doc.save(`report_${report.id}.pdf`);
+            const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = fileName;
+            a.click();
+
+            URL.revokeObjectURL(url);
         });
     });
 
-    // Кнопка удаления
+    // --- Удалить отчёт ---
     document.querySelectorAll(".delete-report").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
