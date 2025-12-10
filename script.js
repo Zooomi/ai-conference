@@ -1,8 +1,8 @@
-// script.js — логика страницы "Сохранённые" + экспорт TXT + DOCX
+// script.js — логика страницы "Сохранённые": TXT + DOCX + удалить
 
 document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("savedReports");
-    if (!container) return;
+    if (!container) return; // на других страницах просто выходим
 
     let reports = JSON.parse(localStorage.getItem("reports") || "[]");
 
@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Рендер отчётов
+    // Рендерим список отчётов
     container.innerHTML = reports
         .map(
             (r) => `
@@ -29,16 +29,24 @@ document.addEventListener("DOMContentLoaded", () => {
         )
         .join("");
 
-    // -------------------------
-    // Скачать TXT
-    // -------------------------
+    // Хелпер для экранирования HTML
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 
+    // -------------------------
+    // СКАЧАТЬ TXT
+    // -------------------------
     document.querySelectorAll(".download-txt").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
             const id = Number(card.dataset.id);
             const report = reports.find((r) => r.id === id);
-
             if (!report) return;
 
             const fileName = `report_${report.id}.txt`;
@@ -56,68 +64,51 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // -------------------------
-    // Скачать DOCX
+    // СКАЧАТЬ DOCX (через html-docx-js)
     // -------------------------
-
     document.querySelectorAll(".download-docx").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
+        btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
             const id = Number(card.dataset.id);
             const report = reports.find((r) => r.id === id);
-
             if (!report) return;
 
-            const { Document, Packer, Paragraph, TextRun } = window.docx;
+            if (!window.htmlDocx || !window.htmlDocx.asBlob) {
+                alert("Библиотека для DOCX ещё не загрузилась. Попробуйте обновить страницу.");
+                return;
+            }
 
-            // Разбиваем текст отчёта по строкам
-            const lines = report.text.split("\n");
+            // Формируем простой HTML-документ для Word
+            const safeText = escapeHtml(report.text);
+            const html = `
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Отчёт от ${escapeHtml(report.date)}</title>
+</head>
+<body>
+<h1>Отчёт от ${escapeHtml(report.date)}</h1>
+<pre style="white-space: pre-wrap; font-family: Arial, sans-serif; font-size: 12pt;">
+${safeText}
+</pre>
+</body>
+</html>`;
 
-            // Преобразуем в массив Paragraph
-            const paragraphs = [
-                new Paragraph({
-                    children: [
-                        new TextRun({
-                            text: `Отчёт от ${report.date}`,
-                            bold: true,
-                            size: 28,
-                        })
-                    ],
-                    spacing: { after: 350 }
-                }),
-                ...lines.map(
-                    (line) =>
-                        new Paragraph({
-                            children: [new TextRun({ text: line, size: 24 })],
-                            spacing: { after: 150 }
-                        })
-                )
-            ];
-
-            // Создаём документ
-            const doc = new Document({
-                sections: [
-                    {
-                        children: paragraphs
-                    }
-                ]
-            });
-
-            // Генерируем файл
-            const blob = await Packer.toBlob(doc);
+            // Конвертируем HTML в DOCX blob
+            const blob = window.htmlDocx.asBlob(html);
 
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
             a.download = `report_${report.id}.docx`;
             a.click();
-
             URL.revokeObjectURL(a.href);
         });
     });
 
     // -------------------------
-    // Удаление отчёта
+    // УДАЛИТЬ ОТЧЁТ
     // -------------------------
-
     document.querySelectorAll(".delete-report").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
