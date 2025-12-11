@@ -6,14 +6,14 @@
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
 </head>
-<body>
+
+<body class="home"> <!-- ВАЖНО: класс home только на главной -->
 
 <header class="header">
     <div class="logo">
         <img src="logo.svg" alt="Логотип AI Conference">
         <span class="logo-text">AI Conference</span>
     </div>
-
     <nav class="nav">
         <a href="index.html" class="active">Главная</a>
         <a href="about.html">О сервисе</a>
@@ -25,6 +25,7 @@
 </header>
 
 <main>
+
     <section class="hero">
         <div class="container hero-inner">
             <div class="hero-text">
@@ -51,37 +52,37 @@
         </div>
     </section>
 
-    <!-- БЛОК С ФОНОМ СЕЛЯТИНО -->
-    <section class="features features-bg">
-        <div class="bg-overlay"></div>
-
+    <!-- Блок с фото Селятино -->
+    <section class="features-bg">
         <div class="container">
-            <h2>Возможности AI Conference</h2>
-
+            <h2 class="white-title">Возможности AI Conference</h2>
             <div class="grid-3">
-                <div class="card">
+                <div class="card dark-card">
                     <h3>Анализ текста</h3>
                     <p>Система анализирует текст совещания и выделяет ключевые темы и вопросы.</p>
                 </div>
 
-                <div class="card">
+                <div class="card dark-card">
                     <h3>Формирование отчёта</h3>
                     <p>Генерируется структурированный отчёт: повестка, решения, задачи, сроки.</p>
                 </div>
 
-                <div class="card">
+                <div class="card dark-card">
                     <h3>Удобный формат</h3>
                     <p>Отчёт можно использовать как приложение к протоколу или учебному заданию.</p>
                 </div>
             </div>
-
-            <div class="footer-text">
-                © 2025 AI Conference. Учебный проект для практики.<br>
-                Тема: ИИ для подготовки отчёта о совещании.
-            </div>
         </div>
     </section>
+
 </main>
+
+<footer class="footer footer-absolute">
+    <div class="footer-text">
+        © 2025 AI Conference. Учебный проект для практики.<br>
+        Тема: ИИ для подготовки отчёта о совещании.
+    </div>
+</footer>
 
 </body>
 </html>
