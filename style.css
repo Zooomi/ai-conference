@@ -28,7 +28,6 @@ a {
 }
 
 /* Header */
-
 .header {
     background: #0A3D91;
     color: #ffffff;
@@ -48,7 +47,6 @@ a {
 
 .logo img {
     width: 140px;
-    height: auto;
 }
 
 .logo-text {
@@ -80,7 +78,6 @@ a {
 }
 
 /* Hero section */
-
 .hero {
     background: linear-gradient(135deg, #0A3D91, #1d6fe3);
     color: #ffffff;
@@ -137,16 +134,13 @@ a {
 }
 
 /* Buttons */
-
 .btn {
     display: inline-block;
     padding: 10px 18px;
     border-radius: 20px;
     font-size: 14px;
     cursor: pointer;
-    border: none;
-    text-align: center;
-    transition: transform 0.1s, box-shadow 0.1s, background 0.2s, color 0.2s;
+    transition: transform 0.1s, box-shadow 0.1s;
 }
 
 .btn-primary {
@@ -163,21 +157,16 @@ a {
 .btn-outline {
     border: 1px solid #ffffff;
     color: #ffffff;
-    background: transparent;
 }
 
 .btn-outline:hover {
     background: rgba(255, 255, 255, 0.15);
 }
 
-.btn.full-width {
-    width: 100%;
-}
-
-/* Sections */
-
+/* Features */
 .features {
     padding: 40px 0 50px;
+    position: relative;
 }
 
 .features h2 {
@@ -191,6 +180,7 @@ a {
     gap: 16px;
 }
 
+/* Cards */
 .card {
     background: #ffffff;
     border-radius: 12px;
@@ -198,173 +188,51 @@ a {
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
-.card h3 {
-    margin-bottom: 8px;
-}
+/* ========== ФОНОВЫЙ БЛОК СЕЛЯТИНО ========== */
 
-/* Page header */
-
-.page-header {
-    padding: 30px 0 20px;
-    background: #e3edff;
-    border-bottom: 1px solid #cbd5f5;
-}
-
-.page-header h1 {
-    margin-bottom: 8px;
-}
-
-/* Two columns */
-
-.two-cols {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    padding: 28px 0 40px;
-}
-
-.two-cols > div {
-    flex: 1;
-    min-width: 260px;
-}
-
-.info-box {
-    background: #ffffff;
-    border-left: 4px solid #0A3D91;
-    border-radius: 10px;
-    padding: 18px;
-}
-
-/* Steps */
-
-.steps {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-    margin: 20px 0 40px;
-}
-
-.step {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 16px;
+.features-bg {
     position: relative;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    min-height: 100vh;
+    padding-top: 80px;
+    padding-bottom: 140px;
+    background:
+        linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.3)),
+        url("selyatino.jpg") center/cover no-repeat fixed;
+    color: white;
 }
 
-.step-number {
+.features-bg::before {
+    content: "";
     position: absolute;
-    top: -10px;
-    left: 14px;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: #0A3D91;
-    color: #ffffff;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    inset: 0;
+    backdrop-filter: blur(4px);
+    z-index: 0;
 }
 
-.step h3 {
-    margin-top: 18px;
+.features-bg .container {
+    position: relative;
+    z-index: 2;
 }
 
-/* Generator */
-
-.generator {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-    gap: 18px;
-    padding: 26px 0 40px;
+.features-bg .card {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    backdrop-filter: blur(6px);
+    color: #fff;
 }
 
-.form-card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 18px 18px 20px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+/* Footer text inside photo block */
+.footer-text {
+    margin-top: 80px;
+    text-align: center;
+    font-size: 17px;
+    line-height: 1.6;
+    opacity: 0.95;
+    z-index: 2;
+    position: relative;
 }
 
-.form-group {
-    margin-bottom: 12px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 4px;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.form-group input,
-.form-group textarea {
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    font-size: 14px;
-    resize: vertical;
-    outline: none;
-    transition: border 0.15s, box-shadow 0.15s;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-    border-color: #0A3D91;
-    box-shadow: 0 0 0 2px rgba(10, 61, 145, 0.15);
-}
-
-/* Examples */
-
-.examples {
-    padding: 26px 0 40px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
-}
-
-.example-card h2 {
-    margin-bottom: 6px;
-}
-
-.example-card h3 {
-    margin-top: 12px;
-    margin-bottom: 4px;
-}
-
-.example-card ul {
-    margin-left: 18px;
-}
-
-/* Contacts */
-
-.contacts {
-    padding: 28px 0 40px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
-}
-
-/* Footer */
-
-.footer {
-    background: #0A3D91;
-    color: #ffffff;
-    padding: 10px 0;
-    margin-top: 30px;
-}
-
-.footer-inner {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: space-between;
-    font-size: 13px;
-}
-
-/* Стили для отчета */
+/* Report styles (unchanged) */
 .report-card {
     background: white;
     border-radius: 12px;
@@ -375,97 +243,18 @@ a {
     animation: fadeIn 0.5s ease;
 }
 
-.report-card.hidden {
-    opacity: 0;
-    transform: translateY(6px);
-    pointer-events: none;
-    transition: opacity 0.25s, transform 0.25s;
-}
-
-.report-card:not(.hidden) {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.report-card h3 {
-    color: #2c3e50;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #f0f0f0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.report-card h3 i {
-    color: #0A3D91;
-}
-
 .report-content {
     line-height: 1.7;
     white-space: pre-line;
     padding: 20px;
     background: #f8f9fa;
     border-radius: 8px;
-    margin-bottom: 20px;
     max-height: 500px;
     overflow-y: auto;
     font-size: 15px;
 }
 
-.report-content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.report-content::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-
-.report-content::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
-}
-
-.report-content::-webkit-scrollbar-thumb:hover {
-    background: #a1a1a1;
-}
-
-.report-actions {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-.btn-action {
-    background: #3498db;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-}
-
-.btn-action:hover {
-    background: #2980b9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.btn-action:first-child {
-    background: #27ae60;
-}
-
-.btn-action:first-child:hover {
-    background: #219653;
-}
-
-/* Стили для загрузки */
+/* Loading animation */
 .spinner {
     border: 4px solid #f3f3f3;
     border-top: 4px solid #3498db;
@@ -481,94 +270,19 @@ a {
     100% { transform: rotate(360deg); }
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Стили для ошибок и сообщений */
-.error {
-    background: #fee;
-    border: 1px solid #f99;
-    padding: 20px;
-    border-radius: 5px;
-    color: #c00;
-    margin-top: 20px;
-}
-
-/* Утилиты */
-.hidden {
-    display: none !important;
-}
-
 /* Responsive */
-
 @media (max-width: 768px) {
     .hero-inner {
         flex-direction: column;
     }
 
-    .generator {
-        grid-template-columns: minmax(0, 1fr);
+    .grid-3 {
+        grid-template-columns: 1fr;
     }
 
-    .header {
-        position: static;
+    .features-bg {
+        background-attachment: scroll;
+        padding-top: 60px;
+        padding-bottom: 80px;
     }
-    
-    .report-card {
-        padding: 15px;
-    }
-    
-    .report-content {
-        padding: 15px;
-        font-size: 14px;
-        max-height: 400px;
-    }
-    
-    .btn-action {
-        padding: 8px 15px;
-        font-size: 14px;
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .report-actions {
-        flex-direction: column;
-    }
-    .footer-bg {
-    position: relative;
-    height: 100vh;               /* fullscreen блок */
-    width: 100%;
-    background: 
-        linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.3)),
-        url("selyatino.jpg") center/cover no-repeat; 
-    display: flex;
-    align-items: flex-end;      
-    justify-content: center;
-    padding-bottom: 30px;
-    color: white;
-    overflow: hidden;
 }
-
-.footer-bg::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    backdrop-filter: blur(3px);
-    z-index: 0;
-}
-
-.footer-text {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    font-size: 14px;
-    opacity: 0.9;
-}
-
-}
-
