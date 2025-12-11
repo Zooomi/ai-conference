@@ -335,3 +335,63 @@ body.home .features-bg {
         padding: 15px;
     }
 }
+/* ============================= */
+/* 🔥 КРАСИВЫЕ КНОПКИ В "СОХРАНЁННЫХ" */
+/* ============================= */
+
+.report-card .btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    margin-right: 6px;
+
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+
+    border: none;
+    transition: 0.2s;
+}
+
+/* TXT — зелёная */
+.report-card .btn-action.download-txt {
+    background: #27ae60;
+    color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.report-card .btn-action.download-txt:hover {
+    background: #1e8b4d;
+    transform: translateY(-2px);
+}
+
+/* DOCX — фиолетовая */
+.report-card .btn-action.download-docx {
+    background: #8e44ad;
+    color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.report-card .btn-action.download-docx:hover {
+    background: #732d91;
+    transform: translateY(-2px);
+}
+
+/* Удалить — красная */
+.report-card .btn-action.delete-report {
+    background: #e74c3c;
+    color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.report-card .btn-action.delete-report:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+.report-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
