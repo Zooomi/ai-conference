@@ -536,4 +536,39 @@ a {
     .report-actions {
         flex-direction: column;
     }
+    .footer-bg {
+    position: relative;
+    height: 100vh;               /* fullscreen блок */
+    width: 100%;
+    background: 
+        linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.3)),
+        url("selyatino.jpg") center/cover no-repeat; 
+    display: flex;
+    align-items: flex-end;      
+    justify-content: center;
+    padding-bottom: 30px;
+    color: white;
+    overflow: hidden;
 }
+
+.footer-bg::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(3px);
+    z-index: 0;
+}
+
+.footer-text {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+}
+
