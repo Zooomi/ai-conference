@@ -1,9 +1,9 @@
 // ============================
 // КОНФИГ ДЛЯ API БЭКЕНДА
 // ============================
-// Здесь URL ТВОЕГО Node.js-сервера с GigaChat.
-// Для локального теста:
-const API_URL = "http://localhost:3000/generate";
+
+// URL твоего backend на Render
+const API_URL = "https://ai-conference-backend.onrender.com";
 
 let lastReportText = "";
 
@@ -44,20 +44,12 @@ async function handleGenerate(event) {
         submitBtn.textContent = "Генерация...";
     }
 
-    // Формируем промпт (как раньше, только теперь для GigaChat)
+    // Формируем промпт
     const prompt = `
-Ты — эксперт по анализу совещаний. 
-Твоя задача — сделать глубокое смысловое сжатие текста.
+Ты — эксперт по анализу совещаний.
+Сожми смысл текста. Без цитат, без диалогов. Только суть.
 
-Правила:
-- НЕ переписывай текст.
-- НЕ используй цитаты.
-- НЕ повторяй диалоги.
-- Пиши только смысл.
-- Выделяй причины, обсуждения, принятые решения, план действий.
-
-Сформируй структурированный отчёт:
-
+Структура:
 1. Краткое резюме
 2. Основные обсуждённые вопросы
 3. Принятые решения
@@ -74,7 +66,8 @@ ${notes}
     `.trim();
 
     try {
-        const resp = await fetch(API_URL, {
+        // 🔥 ВАЖНО: всегда отправляем на /generate
+        const resp = await fetch(`${API_URL}/generate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ prompt })
@@ -86,7 +79,7 @@ ${notes}
         }
 
         const data = await resp.json();
-        const reportText = data.result || data.answer || "Не удалось получить отчёт от GigaChat.";
+        const reportText = data.result || "Не удалось получить отчёт от GigaChat.";
 
         lastReportText = reportText;
 
@@ -95,23 +88,23 @@ ${notes}
                 <h3>Сгенерированный отчёт</h3>
                 <div class="report-content">${reportText.replace(/\n/g, "<br>")}</div>
             `;
-            resultDiv.classList.remove("hidden");
         }
         if (saveBtn) saveBtn.classList.remove("hidden");
         if (statusEl) statusEl.textContent = "Ответ получен от GigaChat.";
 
     } catch (err) {
         console.error(err);
+
         if (resultDiv) {
             resultDiv.innerHTML = `
                 <div class="error">
                     <h3>Ошибка при обращении к GigaChat</h3>
                     <p>${err.message}</p>
-                    <p>Проверьте, что backend-сервер запущен и доступен по адресу ${API_URL}.</p>
+                    <p>Возможно, Render проснулся. Подождите 10–20 секунд и попробуйте снова.</p>
                 </div>
             `;
         }
-        if (statusEl) statusEl.textContent = "Не удалось получить ответ от GigaChat.";
+        if (statusEl) statusEl.textContent = "Ошибка получения данных.";
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
@@ -124,24 +117,26 @@ ${notes}
 // СОХРАНЕНИЕ ОТЧЁТА В localStorage
 // ============================
 function saveCurrentReport() {
-    if (!lastReportText || !lastReportText.trim()) {
+    if (!lastReportText.trim()) {
         alert("Нет отчёта для сохранения.");
         return;
     }
 
     const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+
     reports.push({
         id: Date.now(),
         text: lastReportText,
         date: new Date().toLocaleString("ru")
     });
+
     localStorage.setItem("reports", JSON.stringify(reports));
 
-    alert("Отчёт сохранён! Его можно посмотреть во вкладке «Сохранённые».");
+    alert("Отчёт сохранён!");
 }
 
 // ============================
-// ЛОГИКА ДЛЯ СТРАНИЦЫ "СОХРАНЁННЫЕ"
+// СТРАНИЦА «СОХРАНЁННЫЕ»
 // ============================
 function initSavedPage() {
     const container = document.getElementById("savedReports");
@@ -171,68 +166,54 @@ function initSavedPage() {
         )
         .join("");
 
-    // Хелпер для экранирования
+    // Экранирование HTML
     function escapeHtml(str) {
         return String(str)
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+            .replace(/"/g, "&quot;");
     }
 
-    // TXT
+    // Скачивание TXT
     document.querySelectorAll(".download-txt").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
             const id = Number(card.dataset.id);
             const report = reports.find((r) => r.id === id);
-            if (!report) return;
 
-            const fileName = `report_${report.id}.txt`;
             const content = `Отчёт от ${report.date}\n\n${report.text}`;
-
             const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-            const url = URL.createObjectURL(blob);
 
             const a = document.createElement("a");
-            a.href = url;
-            a.download = fileName;
+            a.href = URL.createObjectURL(blob);
+            a.download = `report_${report.id}.txt`;
             a.click();
-            URL.revokeObjectURL(url);
+            URL.revokeObjectURL(a.href);
         });
     });
 
-    // DOCX через html-docx-js
+    // Скачивание DOCX
     document.querySelectorAll(".download-docx").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
             const id = Number(card.dataset.id);
             const report = reports.find((r) => r.id === id);
-            if (!report) return;
 
-            if (!window.htmlDocx || !window.htmlDocx.asBlob) {
-                alert("Библиотека для DOCX ещё не загрузилась. Обновите страницу.");
+            if (!window.htmlDocx) {
+                alert("DOCX-библиотека не загружена.");
                 return;
             }
 
             const safeText = escapeHtml(report.text);
-            const html = `
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<title>Отчёт от ${escapeHtml(report.date)}</title>
-</head>
-<body>
-<h1>Отчёт от ${escapeHtml(report.date)}</h1>
-<pre style="white-space: pre-wrap; font-family: Arial, sans-serif; font-size: 12pt;">
-${safeText}
-</pre>
-</body>
-</html>`;
 
-            const blob = window.htmlDocx.asBlob(html);
+            const docHtml = `
+<html><body>
+<h1>Отчёт от ${escapeHtml(report.date)}</h1>
+<p style="white-space: pre-wrap; font-size: 13pt;">${safeText}</p>
+</body></html>`;
+
+            const blob = window.htmlDocx.asBlob(docHtml);
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
             a.download = `report_${report.id}.docx`;
@@ -241,7 +222,7 @@ ${safeText}
         });
     });
 
-    // Удаление
+    // Удаление отчёта
     document.querySelectorAll(".delete-report").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
@@ -251,9 +232,7 @@ ${safeText}
             localStorage.setItem("reports", JSON.stringify(reports));
 
             card.remove();
-            if (reports.length === 0) {
-                container.innerHTML = "<p>Пока нет сохранённых отчётов.</p>";
-            }
+            if (reports.length === 0) container.innerHTML = "<p>Пока нет сохранённых отчётов.</p>";
         });
     });
 }
@@ -262,16 +241,13 @@ ${safeText}
 // ИНИЦИАЛИЗАЦИЯ
 // ============================
 document.addEventListener("DOMContentLoaded", () => {
-    // Страница генерации
     const form = document.getElementById("generate-form");
     if (form) {
         form.addEventListener("submit", handleGenerate);
+
         const saveBtn = document.getElementById("saveReportBtn");
-        if (saveBtn) {
-            saveBtn.addEventListener("click", saveCurrentReport);
-        }
+        if (saveBtn) saveBtn.addEventListener("click", saveCurrentReport);
     }
 
-    // Страница сохранённых
     initSavedPage();
 });
