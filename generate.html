@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Генерация отчёта – AI Conference</title>
     <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
 </head>
 <body>
 
@@ -26,18 +27,19 @@
     <section class="page-header">
         <div class="container">
             <h1>Генерация отчёта о совещании</h1>
-            <p>Введите данные совещания — модель ИИ сгенерирует структурированный отчёт.</p>
+            <p>Введите данные совещания — нейросеть GigaChat подготовит структурированный отчёт.</p>
         </div>
     </section>
 
     <section class="container">
         <div class="generator">
 
+            <!-- ФОРМА -->
             <form id="generate-form" class="form-card">
 
                 <div class="form-group">
                     <label for="meeting-topic">Тема совещания</label>
-                    <input type="text" id="meeting-topic" placeholder="Например: Обсуждение 2D-игры">
+                    <input type="text" id="meeting-topic" placeholder="Например: Покупка принтера">
                 </div>
 
                 <div class="form-group">
@@ -55,20 +57,22 @@
                     <textarea id="meeting-notes" rows="6" placeholder="Кратко опишите, что обсуждалось..."></textarea>
                 </div>
 
-                <button id="generate-report-btn" type="button" class="btn btn-primary full-width">
+                <button id="generate-report-btn" type="submit" class="btn btn-primary full-width">
                     Сгенерировать отчёт
                 </button>
 
             </form>
 
             <div id="llm-status" style="margin-top: 10px; font-size: 14px; color: #555;">
-                Модель ещё не загружена.
+                Подключение к GigaChat ещё не выполнялось.
             </div>
 
+            <!-- БЛОК ОТЧЁТА -->
             <div id="reportResult" class="report-card hidden"></div>
 
         </div>
 
+        <!-- КНОПКА СОХРАНЕНИЯ -->
         <button id="saveReportBtn" class="btn btn-primary full-width hidden" style="margin-top: 20px;">
             Сохранить отчёт
         </button>
@@ -81,8 +85,6 @@
         <span>© 2025 AI Conference. Генерация отчётов.</span>
     </div>
 </footer>
-
-<script type="module" src="webllm-report.js"></script>
 
 </body>
 </html>
