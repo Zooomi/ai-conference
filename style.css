@@ -1,6 +1,6 @@
-/* ============================
-   Базовые стили
-============================ */
+/* ===============================
+   БАЗОВЫЕ СТИЛИ
+=============================== */
 
 * {
     box-sizing: border-box;
@@ -31,9 +31,9 @@ a {
     padding: 0 16px;
 }
 
-/* ============================
+/* ===============================
    HEADER
-============================ */
+=============================== */
 
 .header {
     background: #0A3D91;
@@ -56,14 +56,8 @@ a {
     width: 140px;
 }
 
-.logo-text {
-    font-weight: bold;
-    font-size: 18px;
-}
-
 .nav {
     display: flex;
-    flex-wrap: wrap;
     gap: 10px;
     padding: 8px 16px 4px;
 }
@@ -71,199 +65,20 @@ a {
 .nav a {
     padding: 6px 12px;
     border-radius: 20px;
-    font-size: 14px;
-    transition: background 0.2s, color 0.2s;
-}
-
-.nav a:hover {
-    background: rgba(255, 255, 255, 0.2);
+    transition: 0.2s;
 }
 
 .nav a.active {
-    background: #ffffff;
+    background: #fff;
     color: #0A3D91;
 }
 
-/* ============================
-   HERO SECTION
-============================ */
+/* ===============================
+   ГЛАВНАЯ СТРАНИЦА — HERO
+=============================== */
 
 .hero {
     background: linear-gradient(135deg, #0A3D91, #1d6fe3);
     color: #ffffff;
     padding: 40px 0 50px;
-}
-
-.hero-inner {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-    align-items: stretch;
-}
-
-.hero-text {
-    flex: 2;
-    min-width: 260px;
-}
-
-.hero-text h1 {
-    font-size: 32px;
-    margin-bottom: 12px;
-}
-
-.hero-text p {
-    font-size: 16px;
-    max-width: 520px;
-}
-
-.hero-buttons {
-    margin-top: 20px;
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.hero-card {
-    flex: 1.4;
-    min-width: 260px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 16px;
-    padding: 18px 20px;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    color: white;
-}
-
-.hero-card h2 {
-    margin-bottom: 10px;
-    font-size: 20px;
-}
-
-.hero-card ul {
-    margin-left: 18px;
-}
-
-/* ============================
-   BUTTONS
-============================ */
-
-.btn {
-    display: inline-block;
-    padding: 10px 18px;
-    border-radius: 20px;
-    font-size: 14px;
-    cursor: pointer;
-    border: none;
-    text-align: center;
-    transition: 0.15s;
-}
-
-.btn-primary {
-    background: #ffffff;
-    color: #0A3D91;
-}
-
-.btn-primary:hover {
-    background: #e4e4ff;
-}
-
-.btn-outline {
-    border: 1px solid #ffffff;
-    color: #ffffff;
-}
-
-.btn-outline:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-/* ============================
-   FEATURES (обычный фон)
-============================ */
-
-.features {
-    padding: 40px 0 50px;
-}
-
-/* ============================
-   Блок с фото Селятино (ТОЛЬКО НА ГЛАВНОЙ)
-============================ */
-
-body.home .features-bg {
-    position: relative;
-    height: 100vh;
-    width: 100%;
-    padding-top: 40px;
-    padding-bottom: 40px;
-
-    background:
-        linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0.25)),
-        url("selyatino.jpg") center/cover no-repeat;
-}
-
-.white-title {
-    color: white;
-    text-align: center;
-    margin-bottom: 24px;
-}
-
-/* тёмные карточки на фоне */
-.dark-card {
-    background: rgba(0,0,0,0.55);
-    color: white;
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255,255,255,0.15);
-}
-
-/* ============================
-   CARDS
-============================ */
-
-.grid-3 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 16px;
-}
-
-.card {
-    background: white;
-    border-radius: 12px;
-    padding: 18px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-}
-
-/* ============================
-   FOOTER
-============================ */
-
-.footer {
-    background: #0A3D91;
-    color: white;
-    padding: 18px 0;
-    margin-top: 40px;
-    text-align: center;
-}
-
-.footer-absolute {
-    position: relative;
-    background: transparent;
-    color: white;
-}
-
-.footer-text {
-    font-size: 14px;
-    opacity: 0.9;
-}
-
-/* ============================
-   АДАПТИВ
-============================ */
-
-@media (max-width: 768px) {
-    .hero-inner {
-        flex-direction: column;
-    }
-
-    body.home .features-bg {
-        height: 70vh;
-    }
 }
