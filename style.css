@@ -1,3 +1,7 @@
+/* ========================================= */
+/*              ОБЩИЕ СТИЛИ                  */
+/* ========================================= */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -27,7 +31,9 @@ a {
     padding: 0 16px;
 }
 
-/* Header */
+/* ========================================= */
+/*                  HEADER                    */
+/* ========================================= */
 
 .header {
     background: #0A3D91;
@@ -79,12 +85,14 @@ a {
     color: #0A3D91;
 }
 
-/* Hero section */
+/* ========================================= */
+/*                 HERO-БЛОК                  */
+/* ========================================= */
 
 .hero {
     background: linear-gradient(135deg, #0A3D91, #1d6fe3);
     color: #ffffff;
-    padding: 40px 0 50px;
+    padding: 40px 0 60px;
 }
 
 .hero-inner {
@@ -121,22 +129,19 @@ a {
     min-width: 260px;
     background: rgba(255, 255, 255, 0.12);
     border-radius: 16px;
-    padding: 18px 20px;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .hero-card h2 {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     font-size: 20px;
 }
 
-.hero-card ul {
-    margin-left: 18px;
-    margin-top: 8px;
-}
-
-/* Buttons */
+/* ========================================= */
+/*                   КНОПКИ                    */
+/* ========================================= */
 
 .btn {
     display: inline-block;
@@ -145,8 +150,7 @@ a {
     font-size: 14px;
     cursor: pointer;
     border: none;
-    text-align: center;
-    transition: transform 0.1s, box-shadow 0.1s, background 0.2s, color 0.2s;
+    transition: 0.2s ease;
 }
 
 .btn-primary {
@@ -156,8 +160,8 @@ a {
 }
 
 .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
 .btn-outline {
@@ -167,147 +171,82 @@ a {
 }
 
 .btn-outline:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.2);
 }
 
-.btn.full-width {
-    width: 100%;
-}
-
-/* Sections */
-
-.features {
-    padding: 40px 0 50px;
-}
-
-.features h2 {
-    text-align: center;
-    margin-bottom: 24px;
-}
-
-.grid-3 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 16px;
-}
-
-.card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 16px 18px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-}
-
-.card h3 {
-    margin-bottom: 8px;
-}
-
-/* Page header */
-
-.page-header {
-    padding: 30px 0 20px;
-    background: #e3edff;
-    border-bottom: 1px solid #cbd5f5;
-}
-
-.page-header h1 {
-    margin-bottom: 8px;
-}
-
-/* Generator */
-
-.generator {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-    gap: 18px;
-    padding: 26px 0 40px;
-}
-
-.form-card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 18px 18px 20px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-}
-
-.form-group {
-    margin-bottom: 12px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 4px;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.form-group input,
-.form-group textarea {
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    font-size: 14px;
-    resize: vertical;
-    outline: none;
-    transition: border 0.15s, box-shadow 0.15s;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-    border-color: #0A3D91;
-    box-shadow: 0 0 0 2px rgba(10, 61, 145, 0.15);
-}
-
-/* ============================= */
-/* 🔥 НОВЫЙ БЛОК: ФОН СЕЛЯТИНО НА ГЛАВНОЙ */
-/* ============================= */
+/* ========================================= */
+/*     🔥 ГЛАВНАЯ: ФОН СЕЛЯТИНО (УЛУЧШЕННЫЙ)   */
+/* ========================================= */
 
 body.home .features-bg {
     position: relative;
     width: 100%;
-    padding: 80px 0 140px;
+    padding: 110px 0 180px;
 
     background:
-        linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.25)),
+        linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.45)),
         url("selyatino.jpg") center/cover no-repeat;
 
+    filter: brightness(0.75) contrast(1.18) saturate(1.15);
+    overflow: hidden;
     color: white;
+}
+
+body.home .features-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(3px);
+    background: rgba(0,0,0,0.25);
+    z-index: 0;
 }
 
 .white-title {
     text-align: center;
-    color: #fff !important;
-    margin-bottom: 30px;
+    color: #fff;
+    font-size: 26px;
+    margin-bottom: 35px;
+    position: relative;
+    z-index: 2;
 }
 
+/* ========================================= */
+/*           КАРТОЧКИ НА ФОНЕ                 */
+/* ========================================= */
+
 .dark-card {
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.93);
     border-radius: 14px;
-    padding: 20px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-    backdrop-filter: blur(5px);
+    padding: 22px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    position: relative;
+    z-index: 2;
 }
 
 .dark-card h3 {
-    color: #1a1a1a;
+    color: #111;
 }
 
 .dark-card p {
     color: #333;
 }
 
-/* Footer */
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+/* ========================================= */
+/*                   FOOTER                    */
+/* ========================================= */
 
 .footer {
     background: #0A3D91;
     color: #ffffff;
     padding: 20px 0;
     text-align: center;
-}
-
-.footer-absolute {
-    background: #0A3D91;
     margin-top: 0;
 }
 
@@ -316,22 +255,22 @@ body.home .features-bg {
     font-size: 14px;
 }
 
-/* Responsive */
+/* ========================================= */
+/*                ADAPTIVE                     */
+/* ========================================= */
 
 @media (max-width: 768px) {
+
     .hero-inner {
         flex-direction: column;
     }
 
-    .generator {
+    .grid-3 {
         grid-template-columns: 1fr;
     }
 
-    .header {
-        position: static;
-    }
-
     .dark-card {
-        padding: 15px;
+        padding: 16px;
     }
 }
+
