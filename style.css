@@ -394,4 +394,62 @@ body.home .features-bg {
     gap: 10px;
     flex-wrap: wrap;
 }
+/* ============================= */
+/* ✔ Восстановление внешнего вида страницы "О сервисе" */
+/* ============================= */
+
+body.about main {
+    background: #f4f7fb !important;
+    color: #1f2933 !important;
+    padding: 40px 0;
+}
+
+body.about .page-header {
+    background: #e8f0ff !important;
+    color: #1f2933 !important;
+    padding: 40px 0 25px;
+    border-bottom: 1px solid #c7d7f5;
+}
+
+body.about .page-header h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+body.about .container {
+    max-width: 900px;
+}
+
+body.about p,
+body.about li {
+    color: #1f2933 !important;
+    font-size: 17px;
+    line-height: 1.6;
+}
+
+body.about h2 {
+    font-size: 26px;
+    margin: 25px 0 12px;
+    color: #0A3D91;
+    font-weight: bold;
+}
+
+body.about ul {
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
+
+body.about ul li {
+    list-style-type: disc;
+}
+
+body.about ol {
+    margin-left: 20px;
+}
+
+body.about ol li {
+    margin-bottom: 6px;
+}
+
 
