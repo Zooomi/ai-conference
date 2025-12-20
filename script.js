@@ -8,26 +8,49 @@ const API_URL = "https://ai-conference-backend.onrender.com";
 let lastReportText = "";
 
 // ============================
-// 🎤 ГОЛОСОВОЙ ВВОД (Web Speech API)
+// 🎤 ГОЛОСОВОЙ ВВОД (без дублей + абзацы)
 // ============================
 let recognition = null;
 let isRecording = false;
+
+function ensureSentenceEndAndParagraph(text) {
+    const trimmed = (text || "").trim();
+    if (!trimmed) return "";
+
+    // Если заканчивается знаком препинания — просто абзац
+    if (/[.!?…]$/.test(trimmed)) return "\n\n";
+
+    // Иначе поставим точку и абзац
+    return ".\n\n";
+}
+
+function appendSmart(textarea, chunk) {
+    if (!chunk) return;
+
+    // Аккуратно добавляем пробел, если нужно
+    const current = textarea.value;
+    const needsSpace =
+        current.length > 0 &&
+        !/\s$/.test(current) &&
+        !/^[\s.,!?…]/.test(chunk);
+
+    textarea.value = current + (needsSpace ? " " : "") + chunk;
+}
 
 function initVoiceInput() {
     const voiceBtn = document.getElementById("voiceBtn");
     const voiceStatus = document.getElementById("voiceStatus");
     const notesField = document.getElementById("meeting-notes");
 
-    // Если мы не на странице generate.html — просто выходим
+    // Если не страница генерации — выходим
     if (!voiceBtn || !notesField || !voiceStatus) return;
 
-    // Проверка поддержки браузером
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
         voiceBtn.disabled = true;
         voiceBtn.textContent = "🎤 Голосовой ввод недоступен";
-        voiceStatus.textContent = "Голосовой ввод не поддерживается этим браузером.";
+        voiceStatus.textContent = "Браузер не поддерживает Web Speech API (лучше Chrome/Edge).";
         return;
     }
 
@@ -36,23 +59,41 @@ function initVoiceInput() {
     recognition.continuous = true;
     recognition.interimResults = true;
 
+    // чтобы не дублировать — будем добавлять ТОЛЬКО финальные куски
+    let lastFinal = "";
+
+    function setUIRecording(state) {
+        isRecording = state;
+
+        if (state) {
+            voiceBtn.classList.add("is-recording");
+            voiceStatus.classList.add("is-recording");
+            voiceBtn.textContent = "⏹ Остановить запись";
+            voiceStatus.textContent = "🎙 Идёт запись... говорите";
+        } else {
+            voiceBtn.classList.remove("is-recording");
+            voiceStatus.classList.remove("is-recording");
+            voiceBtn.textContent = "🎤 Начать запись";
+            voiceStatus.textContent = "Голосовой ввод: выключен";
+        }
+    }
+
     recognition.onstart = () => {
-        isRecording = true;
-        voiceBtn.textContent = "⏹ Остановить запись";
-        voiceStatus.textContent = "🎙 Идёт запись... говорите";
+        lastFinal = "";
+        setUIRecording(true);
     };
 
     recognition.onend = () => {
-        isRecording = false;
-        voiceBtn.textContent = "🎤 Голосовой ввод";
-        voiceStatus.textContent = "Голосовой ввод: выключен";
+        // После остановки — добавим точку и абзац
+        if (lastFinal.trim()) {
+            notesField.value += ensureSentenceEndAndParagraph(lastFinal);
+        }
+        setUIRecording(false);
     };
 
     recognition.onerror = (e) => {
-        // Типичные: "not-allowed", "service-not-allowed", "no-speech"
         voiceStatus.textContent = `Ошибка голосового ввода: ${e.error}`;
-        isRecording = false;
-        voiceBtn.textContent = "🎤 Голосовой ввод";
+        setUIRecording(false);
     };
 
     recognition.onresult = (event) => {
@@ -61,28 +102,33 @@ function initVoiceInput() {
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) finalText += transcript + " ";
+            if (event.results[i].isFinal) finalText += transcript;
             else interimText += transcript;
         }
 
-        // Добавляем итоговый текст в textarea
+        // ✅ Вставляем ТОЛЬКО финальный текст (без дублей)
         if (finalText.trim()) {
-            notesField.value += finalText;
+            // запомним, чтобы потом красиво завершить
+            lastFinal = finalText;
+
+            // добавим как нормальный текст (без повторов)
+            appendSmart(notesField, finalText.trim());
         }
 
-        // Просто показываем подсказку, что идёт распознавание
+        // Показ статуса распознавания
         if (interimText.trim()) {
             voiceStatus.textContent = "🎙 Идёт запись... (распознаю речь)";
+        } else {
+            voiceStatus.textContent = "🎙 Идёт запись... говорите";
         }
     };
 
+    // Toggle start/stop
     voiceBtn.addEventListener("click", () => {
-        // Toggle start/stop
         if (!isRecording) {
             try {
                 recognition.start();
             } catch (e) {
-                // Иногда start() может бросить ошибку если уже запущено
                 console.warn("recognition.start error:", e);
             }
         } else {
@@ -150,7 +196,6 @@ ${notes}
     `.trim();
 
     try {
-        // 🔥 ВАЖНО: всегда отправляем на /generate
         const resp = await fetch(`${API_URL}/generate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -250,7 +295,6 @@ function initSavedPage() {
         )
         .join("");
 
-    // Экранирование HTML
     function escapeHtml(str) {
         return String(str)
             .replace(/&/g, "&amp;")
@@ -259,7 +303,7 @@ function initSavedPage() {
             .replace(/"/g, "&quot;");
     }
 
-    // Скачивание TXT
+    // TXT
     document.querySelectorAll(".download-txt").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
@@ -277,7 +321,7 @@ function initSavedPage() {
         });
     });
 
-    // Скачивание DOCX
+    // DOCX
     document.querySelectorAll(".download-docx").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
@@ -306,7 +350,7 @@ function initSavedPage() {
         });
     });
 
-    // Удаление отчёта
+    // Удаление
     document.querySelectorAll(".delete-report").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
@@ -325,10 +369,8 @@ function initSavedPage() {
 // ИНИЦИАЛИЗАЦИЯ
 // ============================
 document.addEventListener("DOMContentLoaded", () => {
-    // ✅ 1) Включаем голосовой ввод (если мы на generate.html)
     initVoiceInput();
 
-    // ✅ 2) Генерация
     const form = document.getElementById("generate-form");
     if (form) {
         form.addEventListener("submit", handleGenerate);
@@ -337,6 +379,5 @@ document.addEventListener("DOMContentLoaded", () => {
         if (saveBtn) saveBtn.addEventListener("click", saveCurrentReport);
     }
 
-    // ✅ 3) Страница saved.html
     initSavedPage();
 });
