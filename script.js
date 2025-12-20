@@ -8,6 +8,90 @@ const API_URL = "https://ai-conference-backend.onrender.com";
 let lastReportText = "";
 
 // ============================
+// 🎤 ГОЛОСОВОЙ ВВОД (Web Speech API)
+// ============================
+let recognition = null;
+let isRecording = false;
+
+function initVoiceInput() {
+    const voiceBtn = document.getElementById("voiceBtn");
+    const voiceStatus = document.getElementById("voiceStatus");
+    const notesField = document.getElementById("meeting-notes");
+
+    // Если мы не на странице generate.html — просто выходим
+    if (!voiceBtn || !notesField || !voiceStatus) return;
+
+    // Проверка поддержки браузером
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        voiceBtn.disabled = true;
+        voiceBtn.textContent = "🎤 Голосовой ввод недоступен";
+        voiceStatus.textContent = "Голосовой ввод не поддерживается этим браузером.";
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = "ru-RU";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+        isRecording = true;
+        voiceBtn.textContent = "⏹ Остановить запись";
+        voiceStatus.textContent = "🎙 Идёт запись... говорите";
+    };
+
+    recognition.onend = () => {
+        isRecording = false;
+        voiceBtn.textContent = "🎤 Голосовой ввод";
+        voiceStatus.textContent = "Голосовой ввод: выключен";
+    };
+
+    recognition.onerror = (e) => {
+        // Типичные: "not-allowed", "service-not-allowed", "no-speech"
+        voiceStatus.textContent = `Ошибка голосового ввода: ${e.error}`;
+        isRecording = false;
+        voiceBtn.textContent = "🎤 Голосовой ввод";
+    };
+
+    recognition.onresult = (event) => {
+        let finalText = "";
+        let interimText = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) finalText += transcript + " ";
+            else interimText += transcript;
+        }
+
+        // Добавляем итоговый текст в textarea
+        if (finalText.trim()) {
+            notesField.value += finalText;
+        }
+
+        // Просто показываем подсказку, что идёт распознавание
+        if (interimText.trim()) {
+            voiceStatus.textContent = "🎙 Идёт запись... (распознаю речь)";
+        }
+    };
+
+    voiceBtn.addEventListener("click", () => {
+        // Toggle start/stop
+        if (!isRecording) {
+            try {
+                recognition.start();
+            } catch (e) {
+                // Иногда start() может бросить ошибку если уже запущено
+                console.warn("recognition.start error:", e);
+            }
+        } else {
+            recognition.stop();
+        }
+    });
+}
+
+// ============================
 // ГЕНЕРАЦИЯ ОТЧЁТА ЧЕРЕЗ GigaChat (через backend)
 // ============================
 async function handleGenerate(event) {
@@ -241,6 +325,10 @@ function initSavedPage() {
 // ИНИЦИАЛИЗАЦИЯ
 // ============================
 document.addEventListener("DOMContentLoaded", () => {
+    // ✅ 1) Включаем голосовой ввод (если мы на generate.html)
+    initVoiceInput();
+
+    // ✅ 2) Генерация
     const form = document.getElementById("generate-form");
     if (form) {
         form.addEventListener("submit", handleGenerate);
@@ -249,5 +337,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (saveBtn) saveBtn.addEventListener("click", saveCurrentReport);
     }
 
+    // ✅ 3) Страница saved.html
     initSavedPage();
 });
