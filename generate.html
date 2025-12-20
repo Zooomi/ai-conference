@@ -58,14 +58,15 @@
                 </div>
 
                 <!-- ✅ КНОПКА ГОЛОСОВОГО ВВОДА -->
-                <button id="voiceBtn" type="button" class="btn btn-outline full-width" style="margin-bottom: 10px;">
-                    🎤 Голосовой ввод
-                </button>
+                <div class="voice-panel">
+    <button id="voiceBtn" type="button" class="voice-btn">
+        🎤 Начать запись
+    </button>
+    <div id="voiceStatus" class="voice-status">
+        Голосовой ввод: выключен
+    </div>
+</div>
 
-                <!-- ✅ Статус голосового ввода -->
-                <div id="voiceStatus" style="margin: 6px 0 12px; font-size: 13px; color: #555;">
-                    Голосовой ввод: выключен
-                </div>
 
                 <button id="generate-report-btn" type="submit" class="btn btn-primary full-width">
                     Сгенерировать отчёт
@@ -98,3 +99,4 @@
 
 </body>
 </html>
+
