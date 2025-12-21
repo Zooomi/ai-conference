@@ -8,26 +8,27 @@ const API_URL = "https://ai-conference-backend.onrender.com";
 let lastReportText = "";
 
 // ============================
-// 🎤 ГОЛОСОВОЙ ВВОД (без дублей + абзацы)
+// 🎤 ГОЛОСОВОЙ ВВОД (без дублей + абзацы + точка после стопа)
 // ============================
 let recognition = null;
 let isRecording = false;
 
+// ставим точку/абзац после остановки
 function ensureSentenceEndAndParagraph(text) {
     const trimmed = (text || "").trim();
     if (!trimmed) return "";
 
-    // Если заканчивается знаком препинания — просто абзац
+    // если уже заканчивается знаком препинания — просто абзац
     if (/[.!?…]$/.test(trimmed)) return "\n\n";
 
-    // Иначе поставим точку и абзац
+    // иначе добавим точку и абзац
     return ".\n\n";
 }
 
+// аккуратное добавление в textarea (без склеивания слов)
 function appendSmart(textarea, chunk) {
     if (!chunk) return;
 
-    // Аккуратно добавляем пробел, если нужно
     const current = textarea.value;
     const needsSpace =
         current.length > 0 &&
@@ -37,12 +38,20 @@ function appendSmart(textarea, chunk) {
     textarea.value = current + (needsSpace ? " " : "") + chunk;
 }
 
+// вставляем новый абзац правильно (не ломая пробелы)
+function appendParagraph(textarea) {
+    if (!textarea.value.endsWith("\n\n")) {
+        if (!textarea.value.endsWith("\n")) textarea.value += "\n";
+        textarea.value += "\n";
+    }
+}
+
 function initVoiceInput() {
     const voiceBtn = document.getElementById("voiceBtn");
     const voiceStatus = document.getElementById("voiceStatus");
     const notesField = document.getElementById("meeting-notes");
 
-    // Если не страница генерации — выходим
+    // если не страница генерации — выходим
     if (!voiceBtn || !notesField || !voiceStatus) return;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -59,8 +68,8 @@ function initVoiceInput() {
     recognition.continuous = true;
     recognition.interimResults = true;
 
-    // чтобы не дублировать — будем добавлять ТОЛЬКО финальные куски
-    let lastFinal = "";
+    let lastFinalChunk = ""; // последний финальный кусок (для точки после stop)
+    let lastCommitted = "";  // защита от дублей
 
     function setUIRecording(state) {
         isRecording = state;
@@ -79,14 +88,17 @@ function initVoiceInput() {
     }
 
     recognition.onstart = () => {
-        lastFinal = "";
+        lastFinalChunk = "";
+        lastCommitted = "";
         setUIRecording(true);
     };
 
     recognition.onend = () => {
-        // После остановки — добавим точку и абзац
-        if (lastFinal.trim()) {
-            notesField.value += ensureSentenceEndAndParagraph(lastFinal);
+        // после остановки — завершить последний кусок точкой и абзацем
+        if (lastFinalChunk.trim()) {
+            notesField.value += ensureSentenceEndAndParagraph(lastFinalChunk);
+        } else {
+            // если ничего не было — просто абзац не ставим
         }
         setUIRecording(false);
     };
@@ -106,16 +118,22 @@ function initVoiceInput() {
             else interimText += transcript;
         }
 
-        // ✅ Вставляем ТОЛЬКО финальный текст (без дублей)
+        // ✅ добавляем ТОЛЬКО финальные куски
         if (finalText.trim()) {
-            // запомним, чтобы потом красиво завершить
-            lastFinal = finalText;
+            const chunk = finalText.trim();
 
-            // добавим как нормальный текст (без повторов)
-            appendSmart(notesField, finalText.trim());
+            // защита от повторного добавления одного и того же
+            if (chunk !== lastCommitted) {
+                // если до этого была пауза/конец абзаца — можно разбить
+                // (опционально: можно сделать по паузам, но тут просто добавляем текст)
+                appendSmart(notesField, chunk);
+                lastCommitted = chunk;
+            }
+
+            lastFinalChunk = chunk;
         }
 
-        // Показ статуса распознавания
+        // статус
         if (interimText.trim()) {
             voiceStatus.textContent = "🎙 Идёт запись... (распознаю речь)";
         } else {
@@ -265,6 +283,71 @@ function saveCurrentReport() {
 }
 
 // ============================
+// DOCX: красивое форматирование (заголовки/списки/жирный)
+// ============================
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+function inlineFormat(s) {
+    const safe = escapeHtml(s);
+    return safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
+function reportTextToHtml(reportText) {
+    const lines = String(reportText || "")
+        .replace(/\r/g, "")
+        .split("\n")
+        .map(l => l.trim())
+        .filter(l => l.length > 0);
+
+    let html = "";
+    let inUl = false;
+    let inOl = false;
+
+    function closeLists() {
+        if (inUl) { html += "</ul>"; inUl = false; }
+        if (inOl) { html += "</ol>"; inOl = false; }
+    }
+
+    for (const line of lines) {
+        // Заголовки вида: "1. Краткое резюме"
+        if (/^\d+\.\s+/.test(line)) {
+            closeLists();
+            html += `<h2>${inlineFormat(line.replace(/^\d+\.\s+/, ""))}</h2>`;
+            continue;
+        }
+
+        // Маркированные списки "- пункт" или "• пункт"
+        if (/^[-•]\s+/.test(line)) {
+            if (inOl) { html += "</ol>"; inOl = false; }
+            if (!inUl) { html += "<ul>"; inUl = true; }
+            html += `<li>${inlineFormat(line.replace(/^[-•]\s+/, ""))}</li>`;
+            continue;
+        }
+
+        // Нумерованные пункты "1) ..." или "1. ..."
+        if (/^\d+[).]\s+/.test(line)) {
+            if (inUl) { html += "</ul>"; inUl = false; }
+            if (!inOl) { html += "<ol>"; inOl = true; }
+            html += `<li>${inlineFormat(line.replace(/^\d+[).]\s+/, ""))}</li>`;
+            continue;
+        }
+
+        // Обычный абзац
+        closeLists();
+        html += `<p>${inlineFormat(line)}</p>`;
+    }
+
+    closeLists();
+    return html;
+}
+
+// ============================
 // СТРАНИЦА «СОХРАНЁННЫЕ»
 // ============================
 function initSavedPage() {
@@ -287,21 +370,13 @@ function initSavedPage() {
 
             <div class="report-actions">
                 <button class="btn-action download-txt">TXT</button>
-                <button class="btn-action download-docx" style="background:#8e44ad;">DOCX</button>
-                <button class="btn-action delete-report" style="background:#c0392b;">Удалить</button>
+                <button class="btn-action download-docx">DOCX</button>
+                <button class="btn-action delete-report">Удалить</button>
             </div>
         </div>
     `
         )
         .join("");
-
-    function escapeHtml(str) {
-        return String(str)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;");
-    }
 
     // TXT
     document.querySelectorAll(".download-txt").forEach((btn) => {
@@ -321,7 +396,7 @@ function initSavedPage() {
         });
     });
 
-    // DOCX
+    // DOCX (красивый)
     document.querySelectorAll(".download-docx").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const card = e.target.closest(".report-card");
@@ -333,13 +408,31 @@ function initSavedPage() {
                 return;
             }
 
-            const safeText = escapeHtml(report.text);
+            const bodyHtml = reportTextToHtml(report.text);
 
             const docHtml = `
-<html><body>
-<h1>Отчёт от ${escapeHtml(report.date)}</h1>
-<p style="white-space: pre-wrap; font-size: 13pt;">${safeText}</p>
-</body></html>`;
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+    body { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.35; }
+    h1 { font-size: 20pt; margin: 0 0 14pt 0; }
+    h2 { font-size: 14pt; margin: 14pt 0 6pt 0; color: #0A3D91; }
+    p  { margin: 0 0 8pt 0; }
+    ul, ol { margin: 0 0 10pt 18pt; padding: 0; }
+    li { margin: 0 0 4pt 0; }
+    .meta { color: #444; margin-bottom: 10pt; }
+    .hr { border-top: 1px solid #ddd; margin: 10pt 0 12pt 0; }
+</style>
+</head>
+<body>
+    <h1>Отчёт от ${escapeHtml(report.date)}</h1>
+    <div class="meta">Сформировано в AI Conference</div>
+    <div class="hr"></div>
+    ${bodyHtml}
+</body>
+</html>`.trim();
 
             const blob = window.htmlDocx.asBlob(docHtml);
             const a = document.createElement("a");
