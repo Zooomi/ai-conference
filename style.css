@@ -502,6 +502,17 @@ body.about ol li {
     color: #c0392b;
     font-weight: 600;
 }
+/* Voice button states */
+#voiceBtn.is-recording{
+    background:#e74c3c !important;
+    border-color:#e74c3c !important;
+    color:#fff !important;
+}
+#voiceStatus.is-recording{
+    color:#e74c3c !important;
+    font-weight:600;
+}
+
 
 
 
