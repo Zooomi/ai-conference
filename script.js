@@ -5,7 +5,15 @@
 // URL твоего backend на Render
 const API_URL = "https://ai-conference-backend.onrender.com";
 
+// текст последнего отчёта
 let lastReportText = "";
+
+// мета последнего отчёта (чтобы дата/тема/участники реально сохранялись)
+let lastReportMeta = {
+    topic: "",
+    meetingDate: "",
+    participants: ""
+};
 
 // ============================
 // 🎤 ГОЛОСОВОЙ ВВОД (без дублей + абзацы + точка после стопа)
@@ -38,7 +46,7 @@ function appendSmart(textarea, chunk) {
     textarea.value = current + (needsSpace ? " " : "") + chunk;
 }
 
-// вставляем новый абзац правильно (не ломая пробелы)
+// (оставил — может пригодиться, но сейчас не используется напрямую)
 function appendParagraph(textarea) {
     if (!textarea.value.endsWith("\n\n")) {
         if (!textarea.value.endsWith("\n")) textarea.value += "\n";
@@ -97,8 +105,6 @@ function initVoiceInput() {
         // после остановки — завершить последний кусок точкой и абзацем
         if (lastFinalChunk.trim()) {
             notesField.value += ensureSentenceEndAndParagraph(lastFinalChunk);
-        } else {
-            // если ничего не было — просто абзац не ставим
         }
         setUIRecording(false);
     };
@@ -124,8 +130,6 @@ function initVoiceInput() {
 
             // защита от повторного добавления одного и того же
             if (chunk !== lastCommitted) {
-                // если до этого была пауза/конец абзаца — можно разбить
-                // (опционально: можно сделать по паузам, но тут просто добавляем текст)
                 appendSmart(notesField, chunk);
                 lastCommitted = chunk;
             }
@@ -162,7 +166,7 @@ async function handleGenerate(event) {
     event.preventDefault();
 
     const topic = document.getElementById("meeting-topic")?.value.trim() || "Совещание";
-    const date = document.getElementById("meeting-date")?.value || new Date().toISOString().split("T")[0];
+    const meetingDate = document.getElementById("meeting-date")?.value || new Date().toISOString().split("T")[0];
     const participants = document.getElementById("participants")?.value.trim() || "Участники не указаны";
     const notes = document.getElementById("meeting-notes")?.value.trim();
 
@@ -206,7 +210,7 @@ async function handleGenerate(event) {
 
 Данные совещания:
 Тема: ${topic}
-Дата: ${date}
+Дата: ${meetingDate}
 Участники: ${participants}
 
 Текст совещания:
@@ -228,14 +232,25 @@ ${notes}
         const data = await resp.json();
         const reportText = data.result || "Не удалось получить отчёт от GigaChat.";
 
+        // сохраняем отчёт и МЕТУ (чтобы дата реально “влияла” и сохранялась)
         lastReportText = reportText;
+        lastReportMeta = { topic, meetingDate, participants };
 
+        // выводим отчёт на странице с мета-блоком
         if (resultDiv) {
             resultDiv.innerHTML = `
                 <h3>Сгенерированный отчёт</h3>
-                <div class="report-content">${reportText.replace(/\n/g, "<br>")}</div>
+
+                <div class="report-meta" style="margin:10px 0 14px; font-size:14px; color:#445;">
+                    <div><strong>Тема:</strong> ${escapeHtml(topic)}</div>
+                    <div><strong>Дата совещания:</strong> ${escapeHtml(meetingDate)}</div>
+                    <div><strong>Участники:</strong> ${escapeHtml(participants)}</div>
+                </div>
+
+                <div class="report-content">${escapeHtml(reportText).replace(/\n/g, "<br>")}</div>
             `;
         }
+
         if (saveBtn) saveBtn.classList.remove("hidden");
         if (statusEl) statusEl.textContent = "Ответ получен от GigaChat.";
 
@@ -246,7 +261,7 @@ ${notes}
             resultDiv.innerHTML = `
                 <div class="error">
                     <h3>Ошибка при обращении к GigaChat</h3>
-                    <p>${err.message}</p>
+                    <p>${escapeHtml(err.message)}</p>
                     <p>Возможно, Render проснулся. Подождите 10–20 секунд и попробуйте снова.</p>
                 </div>
             `;
@@ -261,7 +276,7 @@ ${notes}
 }
 
 // ============================
-// СОХРАНЕНИЕ ОТЧЁТА В localStorage
+// СОХРАНЕНИЕ ОТЧЁТА В localStorage (с метаданными)
 // ============================
 function saveCurrentReport() {
     if (!lastReportText.trim()) {
@@ -273,12 +288,20 @@ function saveCurrentReport() {
 
     reports.push({
         id: Date.now(),
+
+        // важное: это дата совещания, а не дата сохранения
+        meetingDate: lastReportMeta.meetingDate || "",
+
+        topic: lastReportMeta.topic || "",
+        participants: lastReportMeta.participants || "",
+
         text: lastReportText,
-        date: new Date().toLocaleString("ru")
+
+        // дата сохранения (чтобы понимать когда сохраняли)
+        savedAt: new Date().toLocaleString("ru")
     });
 
     localStorage.setItem("reports", JSON.stringify(reports));
-
     alert("Отчёт сохранён!");
 }
 
@@ -286,7 +309,7 @@ function saveCurrentReport() {
 // DOCX: красивое форматирование (заголовки/списки/жирный)
 // ============================
 function escapeHtml(str) {
-    return String(str)
+    return String(str ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -365,8 +388,15 @@ function initSavedPage() {
         .map(
             (r) => `
         <div class="report-card" data-id="${r.id}">
-            <h3>Отчёт от ${r.date}</h3>
-            <div class="report-content">${r.text.replace(/\n/g, "<br>")}</div>
+            <h3>Отчёт (сохранён: ${escapeHtml(r.savedAt || "")})</h3>
+
+            <div class="report-meta" style="margin:8px 0 12px; font-size:14px; color:#445;">
+                ${r.topic ? `<div><strong>Тема:</strong> ${escapeHtml(r.topic)}</div>` : ""}
+                ${r.meetingDate ? `<div><strong>Дата совещания:</strong> ${escapeHtml(r.meetingDate)}</div>` : ""}
+                ${r.participants ? `<div><strong>Участники:</strong> ${escapeHtml(r.participants)}</div>` : ""}
+            </div>
+
+            <div class="report-content">${escapeHtml(r.text).replace(/\n/g, "<br>")}</div>
 
             <div class="report-actions">
                 <button class="btn-action download-txt">TXT</button>
@@ -385,7 +415,14 @@ function initSavedPage() {
             const id = Number(card.dataset.id);
             const report = reports.find((r) => r.id === id);
 
-            const content = `Отчёт от ${report.date}\n\n${report.text}`;
+            const header =
+                `AI Conference — Отчёт\n` +
+                `Тема: ${report.topic || "-"}\n` +
+                `Дата совещания: ${report.meetingDate || "-"}\n` +
+                `Участники: ${report.participants || "-"}\n` +
+                `Сохранён: ${report.savedAt || "-"}\n\n`;
+
+            const content = header + (report.text || "");
             const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
 
             const a = document.createElement("a");
@@ -417,7 +454,7 @@ function initSavedPage() {
 <meta charset="UTF-8">
 <style>
     body { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.35; }
-    h1 { font-size: 20pt; margin: 0 0 14pt 0; }
+    h1 { font-size: 20pt; margin: 0 0 12pt 0; }
     h2 { font-size: 14pt; margin: 14pt 0 6pt 0; color: #0A3D91; }
     p  { margin: 0 0 8pt 0; }
     ul, ol { margin: 0 0 10pt 18pt; padding: 0; }
@@ -427,9 +464,17 @@ function initSavedPage() {
 </style>
 </head>
 <body>
-    <h1>Отчёт от ${escapeHtml(report.date)}</h1>
-    <div class="meta">Сформировано в AI Conference</div>
+    <h1>Отчёт</h1>
+
+    <div class="meta">
+        <div><strong>Тема:</strong> ${escapeHtml(report.topic || "-")}</div>
+        <div><strong>Дата совещания:</strong> ${escapeHtml(report.meetingDate || "-")}</div>
+        <div><strong>Участники:</strong> ${escapeHtml(report.participants || "-")}</div>
+        <div><strong>Сохранён:</strong> ${escapeHtml(report.savedAt || "-")}</div>
+    </div>
+
     <div class="hr"></div>
+
     ${bodyHtml}
 </body>
 </html>`.trim();
