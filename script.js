@@ -504,25 +504,22 @@ function initSavedPage() {
     });
 }
 // ============================
-// 📊 Аналитика: общий график (столбики + линия)
+// 📊 Аналитика: столбиковый график (проценты)
 // ============================
 function initAnalyticsChart() {
     const plot = document.getElementById("chartPlot");
-    const lineSvg = document.getElementById("chartLine");
     const xAxis = document.getElementById("chartX");
 
-    if (!plot || !lineSvg || !xAxis) return;
+    if (!plot || !xAxis) return;
 
-    // ✅ ДАННЫЕ НА 4 МЕСЯЦА (проценты 30–100)
-    // Можешь менять цифры как хочешь
+    // ДАННЫЕ (4 месяца, 30–100%)
     const data = [
-        { month: "Сен", bar: 55, line: 50 },
-        { month: "Окт", bar: 70, line: 62 },
-        { month: "Ноя", bar: 82, line: 78 },
-        { month: "Дек", bar: 95, line: 90 }
+        { month: "Сен", value: 55 },
+        { month: "Окт", value: 70 },
+        { month: "Ноя", value: 82 },
+        { month: "Дек", value: 100 }
     ];
 
-    // Ограничения по условию
     const MIN = 30;
     const MAX = 100;
 
@@ -530,53 +527,37 @@ function initAnalyticsChart() {
         return Math.max(MIN, Math.min(MAX, v));
     }
 
-    // Очистка
+    function valueToHeightPercent(v) {
+        return ((clamp(v) - MIN) / (MAX - MIN)) * 100;
+    }
+
+    // очистка
     plot.querySelectorAll(".chart-bar").forEach(el => el.remove());
     xAxis.innerHTML = "";
 
-    // Размеры "рабочей" области в plot (учитываем padding снизу/сверху)
-    // Мы рисуем в процентах от высоты: (v - MIN) / (MAX - MIN)
-    function valueToHeightPercent(v) {
-        const vv = clamp(v);
-        return ((vv - MIN) / (MAX - MIN)) * 100; // 0..100
-    }
+    // столбики
+    data.forEach((item, index) => {
+        const height = valueToHeightPercent(item.value);
+        const left = 6 + index * 24;
 
-    // Расставляем столбики
-    data.forEach((d, i) => {
-        const h = valueToHeightPercent(d.bar);
-        const left = 8 + i * 24; // проценты ширины, под 4 столбика
         const bar = document.createElement("div");
         bar.className = "chart-bar";
         bar.style.left = `${left}%`;
-        bar.style.height = `${h}%`;
+        bar.style.height = `${height}%`;
 
-        bar.innerHTML = `<div class="bar-value">${clamp(d.bar)}%</div>`;
+        bar.innerHTML = `
+            <div class="bar-value">${item.value}%</div>
+        `;
+
         plot.appendChild(bar);
 
         const x = document.createElement("div");
         x.className = "x-item";
-        x.textContent = d.month;
+        x.textContent = item.month;
         xAxis.appendChild(x);
     });
-
-    // Рисуем линию (SVG в координатах 0..100)
-    // X точки равномерно: 12, 36, 60, 84 (примерно под центры столбиков)
-    const xs = [15, 39, 63, 87];
-
-    const points = data.map((d, i) => {
-        const y = 100 - valueToHeightPercent(d.line); // инверсия оси SVG
-        return { x: xs[i], y };
-    });
-
-    const pathD = points
-        .map((p, idx) => (idx === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
-        .join(" ");
-
-    lineSvg.innerHTML = `
-        <path d="${pathD}"></path>
-        ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="1.8"></circle>`).join("")}
-    `;
 }
+
 
 // ============================
 // ИНИЦИАЛИЗАЦИЯ
@@ -596,6 +577,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initAnalyticsChart();
 
 });
+
 
 
 
