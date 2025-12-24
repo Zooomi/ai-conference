@@ -517,11 +517,11 @@ function initAnalyticsChart() {
         { month: "Сен", value: 55 },
         { month: "Окт", value: 70 },
         { month: "Ноя", value: 82 },
-        { month: "Дек", value: 100 }
+        { month: "Дек", value: 95 }
     ];
 
     const MIN = 30;
-    const MAX = 100;
+    const MAX = 95;
 
     function clamp(v) {
         return Math.max(MIN, Math.min(MAX, v));
@@ -577,6 +577,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initAnalyticsChart();
 
 });
+
 
 
 
