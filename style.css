@@ -667,6 +667,29 @@ body.about ol li {
     background: rgba(255,255,255,0.9);
     opacity: 0.35;
 }
+/* Аналитика: чтобы подписи над столбиками не обрезались */
+.chart-plot {
+    position: relative;
+    overflow: visible;     /* важно: чтобы 100% было видно */
+    padding-top: 28px;     /* запас сверху под подписи */
+}
+
+/* подпись над столбиком */
+.chart-bar .bar-value {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: 700;
+    font-size: 13px;
+    background: #ffffff;
+    padding: 3px 8px;
+    border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    white-space: nowrap;
+}
+
+
 
 
 
