@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Аналитика – AI Conference</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body class="analytics">
+
+<header class="header">
+    <div class="logo">
+        <img src="logo.svg" alt="Логотип AI Conference">
+        <span class="logo-text">AI Conference</span>
+    </div>
+
+    <nav class="nav">
+        <a href="index.html">Главная</a>
+        <a href="about.html">О сервисе</a>
+        <a href="generate.html">Генерация отчёта</a>
+        <a href="examples.html">Примеры</a>
+        <a href="saved.html">Сохранённые</a>
+        <a href="analytics.html" class="active">Аналитика</a>
+        <a href="contacts.html">Контакты</a>
+    </nav>
+</header>
+
+<main>
+    <section class="page-header">
+        <div class="container">
+            <h1>Аналитика</h1>
+            <p>Общий график: столбики + линия (проценты 30–100%)</p>
+        </div>
+    </section>
+
+    <section class="container analytics-wrap">
+        <div class="card analytics-card">
+            <h2 class="analytics-title">Динамика показателей по месяцам</h2>
+
+            <div class="chart">
+                <!-- Ось Y слева -->
+                <div class="chart-y">
+                    <div class="y-label">100%</div>
+                    <div class="y-label">80%</div>
+                    <div class="y-label">60%</div>
+                    <div class="y-label">40%</div>
+                    <div class="y-label">30%</div>
+                </div>
+
+                <!-- Поле графика -->
+                <div class="chart-plot" id="chartPlot">
+                    <svg class="chart-line" id="chartLine" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <!-- путь линии добавится через JS -->
+                    </svg>
+
+                    <!-- столбики добавятся через JS -->
+                </div>
+            </div>
+
+            <!-- подписи месяцев -->
+            <div class="chart-x" id="chartX"></div>
+
+            <div class="chart-legend">
+                <span class="legend-item">
+                    <span class="legend-dot bar"></span> Столбики (показатель A)
+                </span>
+                <span class="legend-item">
+                    <span class="legend-dot line"></span> Линия (показатель B)
+                </span>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="container footer-inner">
+        <span>© 2025 AI Conference. Аналитика.</span>
+    </div>
+</footer>
+
+</body>
+</html>
