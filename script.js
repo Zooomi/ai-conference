@@ -527,9 +527,11 @@ function initAnalyticsChart() {
         return Math.max(MIN, Math.min(MAX, v));
     }
 
-    function valueToHeightPercent(v) {
-        return ((clamp(v) - MIN) / (MAX - MIN)) * 100;
-    }
+function valueToHeightPercent(v) {
+    const pct = ((clamp(v) - MIN) / (MAX - MIN)) * 100;
+    return Math.min(pct, 98); // чтобы 100% не упиралось в верх
+}
+
 
     // очистка
     plot.querySelectorAll(".chart-bar").forEach(el => el.remove());
@@ -577,6 +579,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initAnalyticsChart();
 
 });
+
 
 
 
