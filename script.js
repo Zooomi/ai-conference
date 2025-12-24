@@ -593,6 +593,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     initSavedPage();
+    initAnalyticsChart();
+
 });
+
 
 
