@@ -514,10 +514,10 @@ function initAnalyticsChart() {
 
     // ДАННЫЕ (4 месяца, 30–100%)
     const data = [
-        { month: "Сен", value: 55 },
-        { month: "Окт", value: 70 },
-        { month: "Ноя", value: 82 },
-        { month: "Дек", value: 95 }
+        { month: "Сен", value: 34 },
+        { month: "Окт", value: 82 },
+        { month: "Ноя", value: 56 },
+        { month: "Дек", value: 88 }
     ];
 
     const MIN = 30;
@@ -579,6 +579,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initAnalyticsChart();
 
 });
+
 
 
 
